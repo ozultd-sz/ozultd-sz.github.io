@@ -269,6 +269,9 @@
     margin-top: 10px;
     color: var(--fg-1);
   }
+  @media (max-width: 720px) {
+    .section h2 .h2-sub { white-space: normal; }
+  }
 
   /* ---------- About column block ---------- */
   .about {
@@ -493,6 +496,12 @@
   .stack-group.ops .chip:hover { background: rgba(244,159,73,0.22); border-color: rgba(244,159,73,0.7); }
   .stack-group.ops .chip.accent { background: rgba(244,159,73,0.28); border-color: rgba(255,184,109,0.9); }
 
+  .stack-group.sec .chip { background: rgba(45,212,191,0.10); border-color: rgba(45,212,191,0.35); }
+  .stack-group.sec .chip:hover { background: rgba(45,212,191,0.22); border-color: rgba(45,212,191,0.7); }
+  .stack-group.sec .chip.accent { background: rgba(45,212,191,0.28); border-color: rgba(94,234,212,0.85); }
+  .stack-group.partners { grid-column: 1 / -1; }
+
+  .stack-group.sec h5::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 999px; margin-right: 10px; vertical-align: middle; background: #2dd4bf; box-shadow: 0 0 10px rgba(45,212,191,0.7); }
   .stack-group.ai h5::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 999px; margin-right: 10px; vertical-align: middle; background: #818cf8; box-shadow: 0 0 10px rgba(129,140,248,0.7); }
   .stack-group.gtm h5::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 999px; margin-right: 10px; vertical-align: middle; background: #e51f80; box-shadow: 0 0 10px rgba(229,31,128,0.7); }
   .stack-group.ops h5::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 999px; margin-right: 10px; vertical-align: middle; background: #f49f49; box-shadow: 0 0 10px rgba(244,159,73,0.7); }
@@ -1275,7 +1284,7 @@
   <header class="topbar">
     <div class="brand"></div>
     <nav class="nav" aria-label="Primary">
-      <a href="mailto:sebastien.zekpa@nveil.com">
+      <a href="mailto:ozultd@gmail.com">
         <i data-lucide="mail"></i>
         <b>Email</b>
       </a>
@@ -1298,10 +1307,6 @@
   <section class="hero">
     <canvas class="hero-cloud" aria-hidden="true"></canvas>
     <div>
-      <div class="eyebrow">
-        <span class="dot"></span>
-        “The best way to predict the future is to create it” · Peter Drucker
-      </div>
       <h1><span class="last">Sebastien</span><br/><span class="last">Zekpa</span></h1>
       <div class="spectrum-bar"></div>
     </div>
@@ -1313,14 +1318,14 @@
   <!-- ABOUT -->
   <section class="section">
     <div class="section-head section-head--solo">
-      <h2>Revenue Leader · CRO-track<br/><span class="h2-sub">Founder &amp; CEO, Nveil · ex-IBM, Pluralsight, BigID</span></h2>
+      <h2>Enterprise SaaS Revenue Leader<br/><span class="h2-sub">Former Founder &amp; CEO, Nveil · ex-IBM, Pluralsight, BigID</span></h2>
     </div>
     <div class="about">
       <p class="lead">
-        I fundraise, recruit, and scale a high-impact deeptech venture, from non-dilutive grants to private rounds and public funds, and represent it where it matters.
+        10+ years selling cybersecurity, data &amp; AI across EMEA, from IBM team lead to deeptech founder. Now ready to build and lead my next revenue team.
       </p>
 
-      <div class="marquee" aria-hidden="true">
+      <div class="marquee">
       <div class="marquee-track">
         <span>Fundraising</span><span class="star">◆</span>
         <span>Deeptech</span><span class="star">◆</span>
@@ -1330,7 +1335,8 @@
         <span>Hiring &amp; Scaling</span><span class="star">◆</span>
         <span>Investor Relations</span><span class="star">◆</span>
         <span>Cybersecurity</span><span class="star">◆</span>
-        <!-- duplicate -->
+        <!-- duplicate (visual loop only) -->
+        <span aria-hidden="true" style="display:contents">
         <span>Fundraising</span><span class="star">◆</span>
         <span>Deeptech</span><span class="star">◆</span>
         <span>AI &amp; Data Visualization</span><span class="star">◆</span>
@@ -1339,12 +1345,13 @@
         <span>Hiring &amp; Scaling</span><span class="star">◆</span>
         <span>Investor Relations</span><span class="star">◆</span>
         <span>Cybersecurity</span><span class="star">◆</span>
+        </span>
       </div>
     </div>
       <div class="opmap-card">
         <div class="opmap-kicker">Cross-functional operating map</div>
-        <div class="opmap-sub">What I run directly, and where I partner across the organisation.</div>
-      <svg class="opmap-svg opmap" viewBox="45 66 582 402" role="img" aria-label="Cross-functional operating map. Sebastien, CEO and GTM lead, at the centre. Functions he runs directly: Sales and GTM, Marketing, Business Dev, Fundraising, Forecasting, Management, Channel and Partners, Investors and VC. Functions he partners closely with: Legal, IP, Accounting, Product and Eng.">
+        <div class="opmap-sub">What I ran directly as CEO of Nveil, and where I partnered across the organisation.</div>
+      <svg class="opmap-svg opmap" viewBox="45 66 582 402" role="img" aria-label="Cross-functional operating map. Sebastien, as CEO and GTM lead of Nveil, at the centre. Functions he ran directly: Sales and GTM, Marketing, Business Dev, Fundraising, Forecasting, Management, Channel and Partners, Investors and VC. Functions he partnered closely with: Legal, IP, Accounting, Product and Eng.">
         <title>Cross-functional operating map</title>
         <defs>
           <radialGradient id="opmapHalo" cx="50%" cy="50%" r="50%">
@@ -1396,24 +1403,24 @@
       <text class="lbl" x="230.0" y="143.1" text-anchor="end">Product / Eng</text>
       </svg>
         <div class="opmap-legend">
-          <span><span class="mk mk-run"></span>I run this function</span>
-          <span><span class="mk mk-with"></span>I partner closely with</span>
+          <span><span class="mk mk-run"></span>I ran this function</span>
+          <span><span class="mk mk-with"></span>I partnered closely with</span>
         </div>
       </div>
       <div class="highlights" role="list">
         <div class="hl-eyebrow">Selected Highlights</div>
         <ul class="hl-list">
           <li>
-            <b>Co-Founded &amp; raised.</b> Built Nveil from concept to live product in 24 months · <b style="color:var(--accent-pink)">€500K+ non-dilutive</b> from <b>Bpifrance, Crédit Agricole Innovation &amp; GAIA</b>. Recruited founding team in Grenoble.
+            <b>Founded &amp; raised.</b> Built Nveil from concept to live product in 24 months · <b style="color:var(--accent-pink)">€500K+ non-dilutive</b> from <b>Bpifrance, Crédit Agricole Innovation &amp; GAIA</b>. Certified a <b>Deeptech startup by Bpifrance</b> (Bpifrance Deeptech label). Recruited the founding team in Grenoble.
           </li>
           <li>
             <b>Full-cycle GTM across 10+ EU markets.</b> Generated and closed enterprise, mid market and commercial SaaS pipeline across France, Italy, Spain, Portugal, Greece, Benelux, Nordics, and CEE · cybersecurity, governance, analytics. <b>MEDDICC discipline.</b>
           </li>
           <li>
-            <b>Built and led teams.</b> Managed senior AEs/AMs at Pluralsight (Southern Europe); led IBM cybersecurity across FR / SP / IT / Benelux / Nordics / CEE.
+            <b>Built and led teams.</b> Managed 6 senior AEs/AMs at Pluralsight (Southern Europe, <b>€6M</b> team quota delivered at 100%); led IBM cybersecurity to <b>€12M+ ACV/yr</b> across FR / SP / IT / Benelux / Nordics / CEE.
           </li>
           <li>
-            <b>Partnerships &amp; programs unlocked.</b> Nveil accepted into <b>Google for Startups</b> and <b>NVIDIA Inception</b> · cloud credits, GPU access, and ecosystem visibility that meaningfully extend startup runway. At BigID, recruited resellers, ran joint marketing, leveraged investor/VC networks for warm intros.
+            <b>Partnerships &amp; programs unlocked.</b> Nveil accepted into <b>Google for Startups</b> and <b>NVIDIA Inception</b> · cloud credits, GPU access, and ecosystem visibility that meaningfully extend startup runway. Built channel with VARs &amp; MSSPs including <b>Axians, Orange Cyberdefense, Inetum, I-Tracing &amp; Becycure</b>; at BigID, recruited resellers, ran joint marketing and leveraged investor/VC networks for warm intros.
           </li>
           <li>
             <b>Modern growth &amp; visibility.</b> Built Nveil's <b>GEO roadmap</b> · ranking inside <b>ChatGPT, Perplexity, Google AI Overviews</b> · alongside SEO &amp; community-led growth. <b>4,400+ LinkedIn followers</b>; keynotes at Go Entrepreneurs Lyon 2025 and Institut Carnot LSI.
@@ -1432,12 +1439,12 @@
         <div class="lbl">EU Markets Closed</div>
       </div>
       <div class="stat" role="listitem">
-        <div class="num">3</div>
-        <div class="lbl">Languages Spoken</div>
+        <div class="num">€12M+</div>
+        <div class="lbl">Team ACV per Year</div>
       </div>
       <div class="stat" role="listitem">
-        <div class="num">30+</div>
-        <div class="lbl">Enterprise Deals Closed</div>
+        <div class="num">€500K+</div>
+        <div class="lbl">Non-dilutive Raised</div>
       </div>
       <div class="stat" role="listitem">
         <div class="num">4.4K+</div>
@@ -1511,23 +1518,24 @@
 
       <article class="job">
         <div class="job-when">
-          <b>Dec 2023 · Now</b>
-          2 yrs 5 mo · Current
+          <b>Dec 2023 · Aug 2026</b>
+          2 yrs 9 mo
         </div>
         <div class="job-body">
           <h3>Chief Executive Officer <span class="at">at <b>Nveil</b></span></h3>
           <div class="where">Grenoble, France · Founder</div>
           <p>Founded Nveil to solve the gap between raw data and real understanding. An AI platform that generates interactive 3D visualizations from any dataset, with no code, no configuration, no training.</p>
           <ul>
-            <li>Raised pre-seed funding and built the founding team in Grenoble.</li>
+            <li>Raised €500K+ in non-dilutive funding (Bpifrance, Crédit Agricole Innovation, GAIA) and built the founding team in Grenoble.</li>
+            <li>Nveil certified a Deeptech startup by Bpifrance (Bpifrance Deeptech label).</li>
             <li>Took the platform from concept to live product, serving data leaders in pharma, life sciences, and regulated industries.</li>
-            <li>Building enterprise pipeline across EMEA and the US, with early traction in pharma.</li>
-            <li>Speaker at Go Entrepreneurs Lyon 2025 and Institut Carnot LSI; accepted into French deeptech innovation programs.</li>
-            <li>Lead product, go-to-market, fundraising, and hiring.</li>
+            <li>Built enterprise pipeline across EMEA and the US, with early traction in pharma.</li>
+            <li>Speaker at Go Entrepreneurs Lyon 2025 and Institut Carnot LSI; accepted into Google for Startups and NVIDIA Inception.</li>
+            <li>Led product, go-to-market, fundraising, and hiring.</li>
           </ul>
           <div class="job-tags">
             <span class="tag">Fundraising</span>
-            <span class="tag">Deeptech</span>
+            <span class="tag">Bpifrance Deeptech</span>
             <span class="tag">Product</span>
             <span class="tag">GTM</span>
             <span class="tag">Hiring</span>
@@ -1576,7 +1584,7 @@
           <div class="where">Dublin, Ireland</div>
           <p>Managed a team of 6 senior account executives and account managers covering France, Italy, Spain and Portugal: new business, expansion, and renewals.</p>
           <ul>
-            <li>Delivered 100% of team ACV quota ($6M) across new logo, expansion, and renewal motions.</li>
+            <li>Delivered 100% of team ACV quota (€6M) across new logo, expansion, and renewal motions.</li>
             <li>Hired, onboarded, and retained top sales talent.</li>
             <li>Owned daily and weekly activity, pipeline, forecast, and marketing alignment.</li>
             <li>Mentored and coached senior reps through complex enterprise cycles.</li>
@@ -1600,7 +1608,7 @@
           <div class="where">Dublin, Ireland · French market &amp; EU lead</div>
           <p>Three roles across nearly six years: from Business Developer to Account Manager to Sales Specialist &amp; Europe Team Lead for IBM Security.</p>
           <ul>
-            <li>Led a multi-country team to $12M+ ACV per year, consistently exceeding target across France, SPGI, Benelux, Nordics, Italy, and CEE.</li>
+            <li>Led a multi-country team to €12M+ ACV per year, consistently exceeding target across France, SPGI, Benelux, Nordics, Italy, and CEE.</li>
             <li><b style="color:var(--fg-1)">Sales Specialist French Market &amp; Team Leader Europe Cyber Security</b>: SaaS, cloud and on-prem; SIEM, vulnerability management, IAM, MDM/UEM. Led France, SPGI, Benelux, Nordics, Italy, CEE.</li>
             <li><b style="color:var(--fg-1)">Account Manager · IBM MaaS360 (France)</b>: owned client retention, renewals, and expansion across the French SaaS portfolio.</li>
             <li><b style="color:var(--fg-1)">Business Developer · French market</b>: IBM Global Technology Services entry point for French enterprise accounts.</li>
@@ -1631,7 +1639,6 @@
             <span class="tag">B2B Services</span>
           </div>
         </div>
-        <a class="job-link" href="#"><i data-lucide="briefcase"></i></a>
       </article>
 
       <article class="job">
@@ -1645,11 +1652,10 @@
           <p>Helped operators reduce costs and improve the quality of cell-site leases. 90% C-level presentations, NDA / RFT / contract negotiation, OPEX/CAPEX reduction expertise (NPV, payback, DCF). Portfolio of 300+ leases.</p>
           <div class="job-tags">
             <span class="tag">C-Level Negotiation</span>
-            <span class="tag">SaaS Demos</span>
+            <span class="tag">Lease Negotiation</span>
             <span class="tag">Financial Modeling</span>
           </div>
         </div>
-        <a class="job-link" href="#"><i data-lucide="line-chart"></i></a>
       </article>
 
     </div>
@@ -1666,41 +1672,52 @@
       <div class="stack-panel" style="grid-column: 1 / -1;">
         <h4>Core stack</h4>
         <div class="stack-groups">
-          <div class="stack-group ai">
-            <h5>AI / Agents</h5>
+          <div class="stack-group sec">
+            <h5>Security, privacy &amp; compliance</h5>
             <div class="chip-row">
-              <span class="chip">Claude</span>
-              <span class="chip">Notion AI</span>
-              <span class="chip">Zapier</span>
-              <span class="chip">GitHub Copilot</span>
-              <span class="chip">Make</span>
-              <span class="chip">OpenRouter</span>
-              <span class="chip">ElevenLabs</span>
-              <span class="chip accent">Multi-agent</span>
+              <span class="chip">GDPR</span>
+              <span class="chip">NIS2</span>
+              <span class="chip">DORA</span>
+              <span class="chip">ISO 27001</span>
+              <span class="chip">SOC 2</span>
+              <span class="chip">SIEM</span>
+              <span class="chip">IAM</span>
+              <span class="chip">MDM/UEM</span>
+              <span class="chip accent">Data Governance</span>
+            </div>
+          </div>
+          <div class="stack-group ai">
+            <h5>AI infrastructure</h5>
+            <div class="chip-row">
+              <span class="chip">GPUs</span>
+              <span class="chip">CPUs</span>
+              <span class="chip">Model Inference</span>
+              <span class="chip">HPC</span>
+              <span class="chip">Cloud</span>
+              <span class="chip accent">NVIDIA Inception</span>
             </div>
           </div>
           <div class="stack-group gtm">
-            <h5>GTM &amp; Growth</h5>
+            <h5>Sales stack</h5>
             <div class="chip-row">
+              <span class="chip">Salesforce</span>
               <span class="chip">HubSpot</span>
               <span class="chip">Apollo</span>
-              <span class="chip">Lemlist</span>
-              <span class="chip">Mailchimp</span>
-              <span class="chip">Salesforce</span>
-              <span class="chip">G2</span>
-              <span class="chip">Similarweb</span>
+              <span class="chip">Claude</span>
+              <span class="chip">Notion</span>
+              <span class="chip">Make</span>
               <span class="chip accent">MEDDICC</span>
             </div>
           </div>
-          <div class="stack-group ops">
-            <h5>Ops &amp; Build</h5>
+          <div class="stack-group ops partners">
+            <h5>Partners I've worked with</h5>
             <div class="chip-row">
-              <span class="chip">Notion</span>
-              <span class="chip">Figma</span>
-              <span class="chip">Webflow</span>
-              <span class="chip">ClickUp</span>
-              <span class="chip">Resend</span>
-              <span class="chip">GitHub</span>
+              <span class="chip">Axians</span>
+              <span class="chip">Orange Cyberdefense</span>
+              <span class="chip">Inetum</span>
+              <span class="chip">I-Tracing</span>
+              <span class="chip">Becycure</span>
+              <span class="chip accent">VARs &amp; MSSPs</span>
             </div>
           </div>
         </div>
@@ -1728,10 +1745,6 @@
           <div class="lang">
             <span class="name">English</span>
             <span class="lvl"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span></span>
-          </div>
-          <div class="lang">
-            <span class="name">中文 · Chinese</span>
-            <span class="lvl"><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span></span>
           </div>
         </div>
       </div>
@@ -1762,9 +1775,8 @@
 
   <!-- EDUCATION -->
   <section class="section">
-    <div class="section-head">
-      <div class="section-num"><b>Formation</b></div>
-      <h2>From Paris to Shanghai, <em>by way of Dublin.</em></h2>
+    <div class="section-head section-head--solo">
+      <h2>Education</h2>
     </div>
 
     <div class="edu-grid">
@@ -1784,20 +1796,6 @@
           </div>
           <div class="yr">2008 · 2010</div>
         </div>
-        <div class="edu">
-          <div>
-            <h3>Shanghai Tongji University</h3>
-            <div class="deg"><em>Mandarin Programme</em></div>
-          </div>
-          <div class="yr">Shanghai · CN</div>
-        </div>
-        <div class="edu">
-          <div>
-            <h3>Shanghai University of Finance &amp; Economics</h3>
-            <div class="deg"><em>BCT</em> · Chinese Language &amp; Literature</div>
-          </div>
-          <div class="yr">Shanghai · CN</div>
-        </div>
       </div>
     </div>
   </section>
@@ -1806,8 +1804,8 @@
   <footer class="footer">
     <h2>Let's <em>connect.</em></h2>
     <div class="actions">
-      <a class="cta" href="mailto:sebastien.zekpa@nveil.com">
-        <i data-lucide="mail"></i> sebastien.zekpa@nveil.com
+      <a class="cta" href="mailto:ozultd@gmail.com">
+        <i data-lucide="mail"></i> ozultd@gmail.com
       </a>
       <a class="cta-ghost" href="https://www.linkedin.com/in/sebastienzekpa" target="_blank" rel="noopener">
         <i data-lucide="linkedin-2"></i> /in/sebastienzekpa
@@ -2079,70 +2077,76 @@
 
     var KB = [
       {id:"about", kw:["about","who","bio","summary","overview","profile","sebastien","zekpa","introduce","yourself"],
-       a:"Sebastien Zekpa is the <b>CEO &amp; Founder of Nveil</b>, a deeptech AI startup in Grenoble, France. Before Nveil he spent <b>10+ years in enterprise SaaS</b> sales and leadership at IBM, Pluralsight and BigID, closing 30+ deals across 10+ EU markets. He has raised <b>&euro;500K+ non-dilutive</b> for Nveil and speaks French, English and Chinese.",
+       a:"Sebastien Zekpa is an <b>enterprise SaaS revenue leader</b> with <b>10+ years</b> selling cybersecurity, data and AI across EMEA at IBM, Pluralsight and BigID. From December 2023 to August 2026 he was <b>Founder &amp; CEO of Nveil</b>, a Bpifrance-certified deeptech AI startup in Grenoble, where he raised <b>&euro;500K+ non-dilutive</b>. He is now looking for his next revenue leadership role. He speaks French and English.",
        rel:["What is Nveil?","How much has he raised?","What is his sales track record?"]},
       {id:"nveil", kw:["nveil","company","startup","product","platform","building","build","founded","do now","what is nveil"],
-       a:"<b>Nveil</b> is an AI platform that turns any dataset into interactive <b>3D visualizations</b> &mdash; no code, no configuration, no training. Sebastien founded it in December 2023 to close the gap between raw data and real understanding, serving data leaders in <b>pharma, life sciences and regulated industries</b>. More at <a href='https://nveil.com' target='_blank' rel='noopener'>nveil.com</a>.",
+       a:"<b>Nveil</b> is an AI platform that turns any dataset into interactive <b>3D visualizations</b> &mdash; no code, no configuration, no training. Sebastien founded it in December 2023 and led it as CEO until August 2026, serving data leaders in <b>pharma, life sciences and regulated industries</b>. Nveil was certified a <b>Deeptech startup by Bpifrance</b>. More at <a href='https://nveil.com' target='_blank' rel='noopener'>nveil.com</a>.",
        rel:["How much has he raised?","Which industries does it serve?","What AI tools does he use?"]},
-      {id:"funding", kw:["raise","raised","funding","fund","fundraising","money","capital","investor","investors","vc","grant","grants","bpifrance","dilutive"],
-       a:"For Nveil, Sebastien has raised <b>&euro;500K+ in non-dilutive funding</b> &mdash; from <b>Bpifrance, Cr&eacute;dit Agricole Innovation and GAIA</b> &mdash; and built the founding team in Grenoble, taking the platform from concept to live product in 24 months. Nveil was also accepted into <b>Google for Startups</b> and <b>NVIDIA Inception</b>.",
+      {id:"funding", kw:["raise","raised","funding","fund","fundraising","money","capital","investor","investors","vc","grant","grants","bpifrance","dilutive","label","deeptech"],
+       a:"For Nveil, Sebastien raised <b>&euro;500K+ in non-dilutive funding</b> &mdash; from <b>Bpifrance, Cr&eacute;dit Agricole Innovation and GAIA</b> &mdash; and built the founding team in Grenoble, taking the platform from concept to live product in 24 months. Nveil earned the <b>Bpifrance Deeptech label</b> and was accepted into <b>Google for Startups</b> and <b>NVIDIA Inception</b>.",
        rel:["What is Nveil?","What partnerships does he have?","What is his background?"]},
-      {id:"role", kw:["current","now","today","role","title","position","job","doing"],
-       a:"Since <b>December 2023</b> he is <b>CEO &amp; Founder of Nveil</b> in Grenoble. He leads product, go-to-market, fundraising and hiring, and is building enterprise pipeline across EMEA and the US with early traction in pharma.",
+      {id:"role", kw:["current","now","today","role","title","position","job","doing","available","open","looking","next"],
+       a:"Sebastien was <b>Founder &amp; CEO of Nveil</b> from <b>December 2023 to August 2026</b>, leading product, go-to-market, fundraising and hiring. He is now <b>open to his next role</b> &mdash; VP Sales / CRO, Head of Partnerships or similar revenue leadership in enterprise SaaS, cybersecurity, data or AI infrastructure.",
        rel:["What is Nveil?","How much has he raised?","What is his background?"]},
       {id:"experience", kw:["experience","background","career","history","worked","journey","past","roles","cv","resume","employment"],
-       a:"Sebastien's career, most recent first:<br>&bull; <b>Nveil</b> &mdash; CEO &amp; Founder (2023&ndash;now)<br>&bull; <b>BigID</b> &mdash; Regional Sales Manager, Southern Europe (2022&ndash;2023)<br>&bull; <b>Pluralsight</b> &mdash; Senior Sales Manager, Southern Europe (2021&ndash;2022)<br>&bull; <b>IBM</b> &mdash; Sales Specialist &amp; EMEA Cybersecurity Team Lead (2015&ndash;2021)<br>&bull; <b>Eglobaltalent</b> &mdash; Founder (2014&ndash;2015)<br>&bull; <b>Md7</b> &mdash; Consultant &amp; BizDev EMEA (2012&ndash;2014)",
+       a:"Sebastien's career, most recent first:<br>&bull; <b>Nveil</b> &mdash; Founder &amp; CEO (Dec 2023&ndash;Aug 2026)<br>&bull; <b>BigID</b> &mdash; Regional Sales Manager, Southern Europe (2022&ndash;2023)<br>&bull; <b>Pluralsight</b> &mdash; Senior Sales Manager, Southern Europe (2021&ndash;2022)<br>&bull; <b>IBM</b> &mdash; Sales Specialist &amp; EMEA Cybersecurity Team Lead (2015&ndash;2021)<br>&bull; <b>Eglobaltalent</b> &mdash; Founder (2014&ndash;2015)<br>&bull; <b>Md7</b> &mdash; Consultant &amp; BizDev EMEA (2012&ndash;2014)",
        rel:["Tell me about IBM","Tell me about BigID","What did he do at Pluralsight?"]},
       {id:"bigid", kw:["bigid","big id","privacy","governance","discovery"],
        a:"At <b>BigID</b> (2022&ndash;2023) he was Regional Sales Manager for Southern Europe &mdash; enterprise SaaS for big-data discovery, security, governance and privacy across financial services, retail, oil &amp; gas and telecom. He owned territory quota, built pipeline via SDRs, events and outbound, recruited resellers and ran joint marketing, using MEDDICC.",
        rel:["Tell me about IBM","What markets has he sold in?","What is MEDDICC?"]},
       {id:"pluralsight", kw:["pluralsight","plural"],
-       a:"At <b>Pluralsight</b> (2021&ndash;2022, Dublin) he was Senior Sales Manager for Southern Europe, managing a team of 6 senior AEs/AMs across France, Italy, Spain and Portugal. He <b>delivered 100% of team ACV quota ($6M)</b> across new logo, expansion and renewals, and hired, coached and retained top reps.",
+       a:"At <b>Pluralsight</b> (2021&ndash;2022, Dublin) he was Senior Sales Manager for Southern Europe, managing a team of 6 senior AEs/AMs across France, Italy, Spain and Portugal. He <b>delivered 100% of team ACV quota (&euro;6M)</b> across new logo, expansion and renewals, and hired, coached and retained top reps.",
        rel:["Tell me about IBM","How big were his teams?","Tell me about BigID"]},
-      {id:"ibm", kw:["ibm","cybersecurity","cyber","security","siem","iam","qradar","maas360"],
-       a:"At <b>IBM</b> (2015&ndash;2021, Dublin) he held three roles, rising to <b>Sales Specialist &amp; EMEA Cybersecurity Team Lead</b>. He <b>led a multi-country team to $12M+ ACV per year</b>, consistently exceeding target across France, SPGI, Benelux, Nordics, Italy and CEE &mdash; selling SIEM, vulnerability management, IAM and MDM/UEM.",
+      {id:"ibm", kw:["ibm","cybersecurity","cyber","siem","iam","qradar","maas360"],
+       a:"At <b>IBM</b> (2015&ndash;2021, Dublin) he held three roles, rising to <b>Sales Specialist &amp; EMEA Cybersecurity Team Lead</b>. He <b>led a multi-country team to &euro;12M+ ACV per year</b>, consistently exceeding target across France, SPGI, Benelux, Nordics, Italy and CEE &mdash; selling SIEM, vulnerability management, IAM and MDM/UEM.",
        rel:["What did he do at Pluralsight?","What markets has he sold in?","What certifications does he hold?"]},
       {id:"gtm", kw:["gtm","go to market","sales","sell","sold","selling","market","markets","countries","deal","deals","revenue","quota","pipeline","close","closed","track record"],
-       a:"He has run <b>full-cycle GTM across 10+ EU markets</b> &mdash; France, Italy, Spain, Portugal, Greece, Benelux, Nordics and CEE &mdash; and closed <b>30+ enterprise deals</b> in cybersecurity, governance and analytics, with <b>MEDDICC</b> discipline. Highlights: 100% of team ACV quota ($6M) at Pluralsight; a $12M+ ACV/yr team at IBM.",
+       a:"He has run <b>full-cycle GTM across 10+ EU markets</b> &mdash; France, Italy, Spain, Portugal, Greece, Benelux, Nordics and CEE &mdash; closing enterprise deals in cybersecurity, data governance and analytics with <b>MEDDICC</b> discipline. Highlights: 100% of team ACV quota (&euro;6M) at Pluralsight; a &euro;12M+ ACV/yr team at IBM.",
        rel:["Tell me about IBM","What is MEDDICC?","Which industries has he sold into?"]},
       {id:"meddicc", kw:["meddicc","methodology","method","qualification"],
-       a:"<b>MEDDICC</b> is the enterprise sales qualification framework Sebastien runs his deals with &mdash; Metrics, Economic buyer, Decision criteria, Decision process, Identify pain, Champion, Competition. It underpins his 30+ enterprise closes.",
+       a:"<b>MEDDICC</b> is the enterprise sales qualification framework Sebastien runs his deals with &mdash; Metrics, Economic buyer, Decision criteria, Decision process, Identify pain, Champion, Competition.",
        rel:["What is his sales track record?","Tell me about IBM","What are his skills?"]},
       {id:"skills", kw:["skill","skills","strength","strengths","expertise","specialties","good at","superpower"],
-       a:"Core strengths: <b>Start-up Leadership, Fundraising, GTM &amp; Sales, Data Viz / AI, Innovation Management</b> and <b>MEDDICC</b> &mdash; a rare blend of enterprise commercial mastery and hands-on founder execution.",
+       a:"Core strengths: <b>Start-up Leadership, Fundraising, GTM &amp; Sales, Channel &amp; Partnerships, Data Viz / AI</b> and <b>MEDDICC</b>. He also knows the regulatory side of security and data sales &mdash; <b>GDPR, NIS2, DORA, ISO 27001, SOC 2</b> &mdash; and the <b>AI infrastructure</b> stack (GPUs, CPUs, model inference, HPC).",
        rel:["Why should we hire him?","What tools does he use?","What is his background?"]},
-      {id:"languages", kw:["language","languages","speak","speaks","spoken","french","english","chinese","mandarin","multilingual"],
-       a:"Sebastien speaks <b>French</b> (native), <b>English</b> (fluent) and <b>Chinese / Mandarin</b> (conversational) &mdash; he studied Mandarin in Shanghai. That trilingual, cross-cultural range underpins his work across EU and global markets.",
+      {id:"languages", kw:["language","languages","speak","speaks","spoken","french","english","multilingual"],
+       a:"Sebastien speaks <b>French</b> (native) and <b>English</b> (fluent), and has worked across 10+ European markets.",
        rel:["Where is he based?","What did he study?","What is his background?"]},
       {id:"education", kw:["education","study","studied","school","university","degree","college","academic","formation"],
-       a:"Education:<br>&bull; <b>National College of Ireland</b> &mdash; Higher Diploma, Computing &amp; Cyber Security (2017&ndash;2018)<br>&bull; <b>American Business School of Paris</b> &mdash; BBA, International Finance (2008&ndash;2010)<br>&bull; <b>Shanghai Tongji University</b> &mdash; Mandarin Programme<br>&bull; <b>Shanghai University of Finance &amp; Economics</b> &mdash; Chinese Language &amp; Literature",
+       a:"Education:<br>&bull; <b>National College of Ireland</b> &mdash; Higher Diploma, Computing &amp; Cyber Security (2017&ndash;2018)<br>&bull; <b>American Business School of Paris</b> &mdash; BBA, International Finance (2008&ndash;2010)",
        rel:["What languages does he speak?","What certifications does he hold?","What is his background?"]},
       {id:"certs", kw:["certification","certifications","certificate","certified","credentials"],
        a:"Certifications: <b>IBM Security QRadar &mdash; Sales Essentials</b>; <b>IBM Security QRadar &mdash; Technical Sales (L100)</b>; <b>Blue Core Coach</b> (IBM); and <b>Professional Digital Selling</b>.",
        rel:["Tell me about IBM","What did he study?","What are his skills?"]},
       {id:"stack", kw:["tool","tools","stack","tech","technology","software","uses","using"],
-       a:"His working toolkit:<br>&bull; <b>AI / Agents</b> &mdash; Claude, Notion AI, Zapier, GitHub Copilot, Make, OpenRouter, ElevenLabs<br>&bull; <b>GTM &amp; Growth</b> &mdash; HubSpot, Apollo, Lemlist, Mailchimp, Salesforce, G2, Similarweb<br>&bull; <b>Ops &amp; Build</b> &mdash; Notion, Figma, Webflow, ClickUp, Resend, GitHub",
+       a:"His toolkit:<br>&bull; <b>Security, privacy &amp; compliance</b> &mdash; GDPR, NIS2, DORA, ISO 27001, SOC 2, SIEM, IAM, MDM/UEM, data governance<br>&bull; <b>AI infrastructure</b> &mdash; GPUs, CPUs, model inference, HPC<br>&bull; <b>Sales stack</b> &mdash; Salesforce, HubSpot, Apollo, Claude, Notion, Make; MEDDICC",
        rel:["What is Nveil?","What are his skills?","What is MEDDICC?"]},
+      {id:"compliance", kw:["compliance","regulatory","regulation","gdpr","nis2","dora","iso","27001","soc","soc2","security","privacy"],
+       a:"Selling security and data platforms into regulated industries, Sebastien works fluently with <b>GDPR, NIS2, DORA, ISO 27001 and SOC 2</b>, alongside <b>SIEM, IAM, MDM/UEM</b> and <b>data governance</b> &mdash; from IBM Security through BigID's privacy and governance platform.",
+       rel:["Tell me about IBM","Tell me about BigID","What partners has he worked with?"]},
+      {id:"aiinfra", kw:["gpu","gpus","cpu","cpus","inference","hpc","infrastructure","compute","ai infrastructure"],
+       a:"Through Nveil (an NVIDIA Inception member building GPU-heavy 3D visualization), Sebastien knows the <b>AI infrastructure</b> stack: <b>GPUs, CPUs, model inference and HPC</b> &mdash; useful for revenue roles at AI cloud and model companies.",
+       rel:["What is Nveil?","What partners has he worked with?","Why should we hire him?"]},
       {id:"industries", kw:["industry","industries","vertical","verticals","sector","sectors","customers","clients","pharma","life sciences","healthcare","regulated"],
        a:"Nveil focuses on <b>pharma, life sciences and other regulated industries</b>. Across his wider career he has also sold into <b>financial services, retail, oil &amp; gas and telecommunications</b>.",
        rel:["What is Nveil?","What markets has he sold in?","Tell me about BigID"]},
       {id:"speaking", kw:["speaker","speaking","keynote","talk","talks","event","events","conference","stage","panel","vivatech","gitex","jensen","huang","clara","chappaz"],
        a:"Sebastien is an active speaker. Recent moments: <b>Go Entrepreneurs Lyon 2025</b> (Stage 1 panelist), <b>Institut Carnot LSI</b>, <b>VivaTech</b> (where he met NVIDIA CEO Jensen Huang), <b>GITEX Berlin</b>, <b>Pavillon France</b>, and meeting <b>Clara Chappaz</b>, France's Minister Delegate for AI. He has 4,400+ LinkedIn followers.",
        rel:["What partnerships does he have?","What is Nveil?","How can I contact him?"]},
-      {id:"partnerships", kw:["partnership","partnerships","program","programs","nvidia","inception","google","minalogic","accelerator","ecosystem"],
-       a:"Nveil has been accepted into <b>Google for Startups</b> and <b>NVIDIA Inception</b> &mdash; unlocking cloud credits, GPU access and ecosystem visibility &mdash; and is active in French deeptech programs including <b>Minalogic</b>.",
+      {id:"partnerships", kw:["partnership","partnerships","partner","partners","channel","reseller","resellers","var","mssp","axians","orange","inetum","tracing","becycure","program","programs","nvidia","inception","google","minalogic","accelerator","ecosystem"],
+       a:"Sebastien has worked with VARs and MSSPs including <b>Axians, Orange Cyberdefense, Inetum, I-Tracing and Becycure</b>, and recruited and enabled resellers at BigID. As CEO, he brought Nveil into <b>Google for Startups</b> and <b>NVIDIA Inception</b> &mdash; cloud credits, GPU access and ecosystem visibility &mdash; earned the <b>Bpifrance Deeptech label</b>, and was active in <b>Minalogic</b>.",
        rel:["How much has he raised?","What is Nveil?","What events has he spoken at?"]},
-      {id:"location", kw:["where","located","location","based","live","lives","city","grenoble","france","relocate","remote"],
-       a:"He is based in <b>Grenoble, France</b>. He is deeply international, though &mdash; around 9 years in <b>Dublin</b> (IBM, Pluralsight, Eglobaltalent) plus time studying in <b>Shanghai</b> and <b>Paris</b>.",
+      {id:"location", kw:["where","located","location","based","live","lives","city","annecy","france","relocate","remote"],
+       a:"He is based in <b>Annecy, France</b>, and is deeply international &mdash; around 9 years in <b>Dublin</b> (IBM, Pluralsight, Eglobaltalent), studies in <b>Paris</b>, and Nveil in <b>Grenoble</b>.",
        rel:["What languages does he speak?","How can I contact him?","What is his background?"]},
       {id:"contact", kw:["contact","reach","email","linkedin","hire","hiring","connect","touch","message"],
-       a:"You can reach Sebastien at <a href='mailto:sebastien.zekpa@nveil.com'>sebastien.zekpa@nveil.com</a>, on <a href='https://www.linkedin.com/in/sebastienzekpa' target='_blank' rel='noopener'>LinkedIn</a>, or via <a href='https://nveil.com' target='_blank' rel='noopener'>nveil.com</a>. He is based in Grenoble, France.",
+       a:"You can reach Sebastien at <a href='mailto:ozultd@gmail.com'>ozultd@gmail.com</a> or on <a href='https://www.linkedin.com/in/sebastienzekpa' target='_blank' rel='noopener'>LinkedIn</a>. He is based in Annecy, France.",
        rel:["Why should we hire him?","What is Nveil?","What is his background?"]},
       {id:"leadership", kw:["leadership","lead","manage","management","manager","team","teams","people"],
-       a:"He has built and led teams across borders: <b>6 senior AEs/AMs at Pluralsight</b> (Southern Europe) and a <b>multi-country cybersecurity team at IBM</b> ($12M+ ACV/yr across France, SPGI, Benelux, Nordics, Italy, CEE) &mdash; hiring, coaching and retaining top talent. As a founder he recruited Nveil's founding team in Grenoble.",
+       a:"He has built and led teams across borders: <b>6 senior AEs/AMs at Pluralsight</b> (Southern Europe) and a <b>multi-country cybersecurity team at IBM</b> (&euro;12M+ ACV/yr across France, SPGI, Benelux, Nordics, Italy, CEE) &mdash; hiring, coaching and retaining top talent. As a founder he recruited Nveil's founding team in Grenoble.",
        rel:["Tell me about IBM","What did he do at Pluralsight?","Why should we hire him?"]},
       {id:"why", kw:["why","hire","impress","best","fit","choose","value","stand out","special"],
-       a:"Because he pairs a decade of <b>enterprise SaaS GTM mastery</b> (MEDDICC, 30+ deals, 10+ markets, $12M+ ACV teams) with genuine <b>founder grit</b> &mdash; raising non-dilutive capital, recruiting a team and shipping a deeptech AI product from zero. Commercial and technical, trilingual, equally at home on stage and in the boardroom.",
+       a:"Because he pairs a decade of <b>enterprise SaaS GTM</b> (MEDDICC, 10+ markets, &euro;12M+ ACV teams, deep VAR/MSSP channel) with genuine <b>founder experience</b> &mdash; raising non-dilutive capital, recruiting a team and shipping a Bpifrance-certified deeptech AI product from zero. Commercial and technical, equally at home on stage and in the boardroom.",
        rel:["How much has he raised?","What is his sales track record?","How can I contact him?"]}
     ];
 
