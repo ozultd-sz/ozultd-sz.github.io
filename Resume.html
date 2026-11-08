@@ -5,7 +5,7 @@
 <title>Sebastien Zekpa · Resume</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="stylesheet" href="assets/nveil.css" />
-<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: var(--bg-night); color: var(--fg-1); }
@@ -1148,6 +1148,8 @@
     .stat-strip .stat:nth-child(odd) { border-left: 0 !important; }
     .footer { grid-template-columns: 1fr; }
     .footer .actions { align-items: flex-start; }
+    html, body { overflow-x: clip; }
+    .marquee, .about > .marquee { margin-left: -24px; margin-right: -24px; }
   }
   /* ---------- Hover magnify: lift & scale sections under cursor ---------- */
   .job,
@@ -1165,6 +1167,7 @@
     will-change: transform;
     position: relative;
   }
+  @media (hover: hover) and (pointer: fine) {
   .job:hover,
   .edu:hover,
   .panel:hover {
@@ -1201,6 +1204,7 @@
   }
   .edu-grid:hover .edu:not(:hover) {
     filter: brightness(0.6) saturate(0.7);
+  }
   }
   /* Disable on touch / coarse pointers + reduced motion */
   @media (hover: none), (prefers-reduced-motion: reduce) {
@@ -1274,6 +1278,95 @@
   .job-body ul li::before {
     /* untouched */
   }
+  /* ---------- Phone layout ---------- */
+  @media (max-width: 640px) {
+    .page { padding: 0 16px 48px; }
+
+    /* Top bar: four equal tap targets, icon over label */
+    .topbar { margin: 0 -16px 8px; padding: 8px 8px; gap: 0; }
+    .topbar .brand { display: none; }
+    .topbar .nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; width: 100%; }
+    .topbar .nav a { flex-direction: column; gap: 4px; padding: 8px 2px; min-height: 48px; justify-content: center; text-align: center; white-space: normal; }
+    .topbar .nav a i { width: 18px; height: 18px; }
+    .topbar .nav a b { font-size: 11px; line-height: 1.15; }
+
+    /* Hero: name beside a small portrait instead of a full-screen photo */
+    .hero { grid-template-columns: 1fr 104px; gap: 16px; padding: 24px 0 20px; align-items: end; }
+    .hero h1 { font-size: 46px; line-height: 0.95; margin: 0 0 14px; }
+    .hero-portrait { max-width: none; border-radius: 14px; }
+
+    /* Section rhythm */
+    .section { padding: 36px 0; }
+    .section-head { gap: 6px; margin-bottom: 20px; }
+    .section-num b { font-family: var(--font-mono); font-size: 12px; letter-spacing: var(--ls-wider); text-transform: uppercase; color: var(--accent-pink) !important; margin: 0; }
+    .section h2 { font-size: 32px; line-height: 1.05; }
+    .section h2 .h2-sub { font-size: 15px; line-height: 1.35; margin-top: 8px; }
+
+    /* About */
+    .about { gap: 0; }
+    .about p.lead { font-size: 20px; line-height: 1.4; margin: 16px 0 8px; }
+    .marquee, .about > .marquee { margin: 16px -16px; padding: 12px 0; }
+    .marquee-track { font-size: 17px; gap: 28px; }
+    .opmap-card { padding: 16px 12px; margin: 8px 0 20px; }
+    .opmap-kicker { font-size: 11px; }
+    .opmap-sub { font-size: 13px; }
+    .opmap-legend { gap: 8px 18px; font-size: 12.5px; }
+
+    .highlights { gap: 12px; margin-top: 0; }
+    .hl-eyebrow { font-size: 11px; padding-bottom: 10px; }
+    .hl-list { gap: 4px; }
+    .hl-list li { font-size: 15px; line-height: 1.55; padding: 12px 4px 12px 28px; border-left-width: 2px; }
+    .hl-list li::before { left: 10px; top: 12px; font-size: 13px; }
+
+    /* Stats: 2 x 2 grid, last tile full width */
+    .stat-strip { padding: 8px 0; margin-top: 24px; }
+    .stat-strip .stat { padding: 16px 8px; gap: 6px; }
+    .stat-strip .stat:nth-child(n+3) { border-top: 1px solid var(--border-1); }
+    .stat-strip .stat:last-child:nth-child(odd) { grid-column: 1 / -1; border-left: 0; }
+    .stat-strip .num { font-size: 34px; }
+    .stat-strip .lbl { font-size: 10px; }
+
+    /* Photo carousel: one card plus a peek of the next */
+    .carousel { margin-top: 28px; }
+    .carousel-eyebrow { font-size: 10px; margin-bottom: 12px; }
+    .carousel-track { margin: 0 -16px; padding: 4px 16px 20px; gap: 12px; scroll-padding-left: 16px; }
+    .carousel-card { width: 76vw; max-width: 300px; }
+
+    /* Experience */
+    .job { gap: 10px; padding: 24px 0; }
+    .job-when { font-size: 10px; }
+    .job-when b { font-size: 15px; margin-bottom: 2px; }
+    .job-body h3 { font-size: 22px; line-height: 1.15; }
+    .job-body .where { font-size: 10px; margin-bottom: 10px; }
+    .job-body p { font-size: 14.5px; line-height: 1.55; }
+    .job-body ul li { font-size: 14px; }
+    .job-tags { margin-top: 12px; }
+    .tag { font-size: 10px; padding: 4px 8px; }
+    .job-link { justify-self: start; padding: 6px 0; }
+
+    /* Toolkit */
+    .grid-3 { gap: 14px; }
+    .stack-panel, .panel { padding: 18px 16px; }
+    .stack-groups { gap: 20px; }
+    .chip { font-size: 12.5px; padding: 6px 12px; }
+
+    /* Education */
+    .edu-grid > div:empty { display: none; }
+    .edu { gap: 12px; padding: 18px 0; }
+    .edu h3 { font-size: 18px; }
+    .edu .deg { font-size: 13.5px; }
+
+    /* Footer: full-width, thumb-friendly buttons */
+    .footer { margin-top: 40px; padding-top: 32px; gap: 24px; }
+    .footer h2 { font-size: 44px; }
+    .footer .actions { align-items: stretch; gap: 10px; }
+    .cta, .cta-ghost { justify-content: center; min-height: 50px; }
+    .colophon { margin-top: 32px; flex-direction: column; align-items: flex-start; gap: 6px; padding-bottom: 72px; }
+
+    /* Chat assistant: near full-screen sheet */
+    .askcv-launch { right: 16px; bottom: 16px; }
+    .askcv-panel { right: 8px; left: 8px; bottom: 8px; width: auto; max-width: none; height: auto; top: 64px; max-height: none; }
+  }
 </style>
 </head>
 <body>
@@ -1289,7 +1382,7 @@
         <b>Email</b>
       </a>
       <a href="https://www.linkedin.com/in/sebastienzekpa" target="_blank" rel="noopener">
-        <i data-lucide="linkedin-2"></i>
+        <i data-lucide="linkedin"></i>
         <b>LinkedIn</b>
       </a>
       <a href="https://nveil.com" target="_blank" rel="noopener">
@@ -1808,7 +1901,7 @@
         <i data-lucide="mail"></i> ozultd@gmail.com
       </a>
       <a class="cta-ghost" href="https://www.linkedin.com/in/sebastienzekpa" target="_blank" rel="noopener">
-        <i data-lucide="linkedin-2"></i> /in/sebastienzekpa
+        <i data-lucide="linkedin"></i> /in/sebastienzekpa
       </a>
       <a class="cta-ghost" href="javascript:window.print()">
         <i data-lucide="printer"></i> Save as PDF
