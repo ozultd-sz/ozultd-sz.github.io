@@ -1,0 +1,346 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Plein Malin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: a single working column — trip form on top, the 3 recommended stops as pump-price tiles,
+   then a route strip (km along route × €/L) and the full corridor list. French road-sign vocabulary:
+   motorway blue, signage condensed type, prices in tabular figures like a station totem. */
+:root{
+  --bg:#f4f6f9; --surface:#ffffff; --fg:#141a24; --muted:#5b6678; --line:#dbe1ea;
+  --accent:#1f4fa3;        /* autoroute sign blue */
+  --accent-ink:#ffffff;
+  --good:#17803d; --bad:#b4332c; --warn:#a76400;
+  --display:"Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141c; --surface:#171e29; --fg:#e8edf5; --muted:#9aa6b8; --line:#2a3443;
+  --accent:#5b8ee6; --accent-ink:#0b1220; --good:#4cc477; --bad:#ef7a72; --warn:#e2a43c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141c; --surface:#171e29; --fg:#e8edf5; --muted:#9aa6b8; --line:#2a3443;
+  --accent:#5b8ee6; --accent-ink:#0b1220; --good:#4cc477; --bad:#ef7a72; --warn:#e2a43c; color-scheme:dark}
+
+body{background:var(--bg);color:var(--fg);font-family:var(--body);line-height:1.5}
+.wrap{max-width:980px;margin:0 auto;padding-block:24px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:grid;gap:20px}
+h1,h2{font-family:var(--display);font-weight:700;letter-spacing:.01em;text-wrap:balance;margin:0}
+h1{font-size:2.2rem;line-height:1.05}
+h2{font-size:1.35rem;text-transform:uppercase;letter-spacing:.06em}
+.sub{color:var(--muted);margin:4px 0 0;max-width:62ch}
+header{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.sign{background:var(--accent);color:var(--accent-ink);font-family:var(--display);font-weight:700;
+  font-size:1.1rem;padding:6px 10px;border-radius:6px;letter-spacing:.04em}
+
+form{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;
+  display:grid;gap:14px}
+.row{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.row.trip{grid-template-columns:1fr 1fr}
+@media (max-width:560px){.row.trip{grid-template-columns:1fr}}
+label{display:grid;gap:4px;font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+input,select{font:inherit;font-size:.95rem;color:var(--fg);background:var(--bg);border:1px solid var(--line);
+  border-radius:8px;padding:9px 10px;min-width:0;text-transform:none;letter-spacing:0}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+button{font:inherit;font-weight:600;border:0;border-radius:8px;padding:10px 18px;cursor:pointer;
+  background:var(--accent);color:var(--accent-ink)}
+button[disabled]{opacity:.6;cursor:progress}
+.status{font-size:.88rem;color:var(--muted)}
+
+.notice{border:1px solid var(--line);border-left:4px solid var(--warn);background:var(--surface);
+  border-radius:var(--r);padding:12px 14px;font-size:.9rem}
+.notice strong{color:var(--warn)}
+
+.summary{display:flex;gap:8px 22px;flex-wrap:wrap;font-size:.9rem;color:var(--muted)}
+.summary b{color:var(--fg);font-variant-numeric:tabular-nums}
+
+.picks{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.pick{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;
+  display:grid;gap:10px;align-content:start;min-width:0}
+.pick.first{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.pick-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.rank{font-family:var(--display);font-weight:700;font-size:1rem;background:var(--fg);color:var(--bg);
+  border-radius:6px;padding:1px 8px}
+.pick.first .rank{background:var(--accent);color:var(--accent-ink)}
+.name{font-weight:600;margin:0}
+.addr{color:var(--muted);font-size:.85rem;margin:0}
+.totem{display:flex;align-items:baseline;gap:6px;font-family:var(--display);font-variant-numeric:tabular-nums}
+.totem .p{font-size:2.6rem;font-weight:700;line-height:1}
+.totem .u{color:var(--muted);font-size:1rem}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:.72rem;font-weight:600;border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--muted)}
+.chip.a{border-color:var(--accent);color:var(--accent)}
+.chip.est{border-color:var(--warn);color:var(--warn)}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:.86rem;margin:0}
+.facts dt{color:var(--muted)} .facts dd{margin:0;font-variant-numeric:tabular-nums}
+.save{font-weight:700}
+.save.pos{color:var(--good)} .save.neg{color:var(--bad)}
+.go{font-size:.86rem;font-weight:600;color:var(--accent);text-decoration:none}
+.go:hover{text-decoration:underline}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;min-width:0}
+.chart{overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:560px;height:auto}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.86rem;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.num,th.num{text-align:right}
+tr.top td{font-weight:600}
+.foot{font-size:.8rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.pick{transition:transform .15s}.pick:hover{transform:translateY(-2px)}}
+</style>
+
+</head><body>
+<div class="wrap">
+  <header>
+    <span class="sign">FR · CH</span>
+    <div>
+      <h1>Plein Malin</h1>
+      <p class="sub">Où faire le plein entre deux villes en France ou en Suisse, en tenant compte du prix à la pompe et du carburant consommé pour le détour.</p>
+    </div>
+  </header>
+
+  <form id="f" autocomplete="off">
+    <div class="row trip">
+      <label for="from">Départ<input id="from" value="Annecy" required></label>
+      <label for="to">Arrivée<input id="to" value="Genève" required></label>
+    </div>
+    <div class="row">
+      <label for="fuel">Carburant
+        <select id="fuel">
+          <option value="diesel">Gazole</option>
+          <option value="sp95,e10">SP95 ou E10</option>
+          <option value="sp95">SP95</option>
+          <option value="e10">SP95-E10</option>
+          <option value="sp98">SP98</option>
+          <option value="e85">E85</option>
+          <option value="gpl">GPL</option>
+        </select></label>
+      <label for="corr">Écart max. du trajet (km)<input id="corr" type="number" min="0.5" max="15" step="0.5" value="3"></label>
+    </div>
+    <div class="actions">
+      <button id="go" type="submit">Trouver les meilleures stations</button>
+      <span class="status" id="status" role="status"></span>
+    </div>
+  </form>
+
+  <div class="notice" id="notice" hidden></div>
+
+  <div class="summary" id="summary"></div>
+  <section class="picks" id="picks" aria-label="Stations recommandées"></section>
+
+  <section class="panel">
+    <h2>Sur le trajet</h2>
+    <div class="legend"><span>Chaque point est une station : de gauche à droite, les km depuis le départ ; plus c’est haut, plus c’est cher. Les pastilles numérotées sont les stations recommandées.</span></div>
+    <div class="chart" id="chart"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Toutes les stations du trajet</h2>
+    <div class="tbl"><table id="tbl"></table></div>
+  </section>
+
+  <p class="foot">France : données officielles Prix des carburants (mises à jour toutes les 10 min environ). Suisse : pas de données de prix publiques officielles, les stations viennent d’OpenStreetMap et les prix marqués « estimé » sont des moyennes nationales. Calcul basé sur un plein de 50 L et une consommation de 6,5 L/100 km. Itinéraire par OSRM, adresses par Nominatim, conversion CHF→EUR au taux BCE.</p>
+</div>
+
+<script>
+"use strict";
+document.documentElement.lang="fr";
+// ───────── config ─────────
+const OSRM="https://router.project-osrm.org", NOMI="https://nominatim.openstreetmap.org/search",
+  OVERPASS="https://overpass-api.de/api/interpreter",
+  FR_API="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/exports/json",
+  FX="https://api.frankfurter.app/latest?from=CHF&to=EUR";
+const FUELS={diesel:["gazole","fuel:diesel","Gazole"],sp95:["sp95","fuel:octane_95","SP95"],e10:["e10",null,"E10"],
+  sp98:["sp98","fuel:octane_98","SP98"],e85:["e85","fuel:e85","E85"],gpl:["gplc","fuel:lpg","GPL"]};
+const CH_DEFAULT={diesel:2.10,sp95:1.92,sp98:2.02,e85:1.60,gpl:1.30};
+const CH_BBOX=[45.80,5.95,47.82,10.50], ROAD=1.35, MAX_AGE_D=7, R=6371.0088;
+const $=id=>document.getElementById(id);
+
+// ───────── geometry ─────────
+function hav(a,b,c,d){const p1=a*Math.PI/180,p2=c*Math.PI/180,dp=p2-p1,dl=(d-b)*Math.PI/180;
+  const h=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
+class RouteIndex{
+  constructor(coords,cell=5){
+    this.coords=coords;this.lat0=coords.reduce((s,c)=>s+c[0],0)/coords.length;
+    this.kx=Math.PI/180*R*Math.cos(this.lat0*Math.PI/180);this.ky=Math.PI/180*R;
+    this.xy=coords.map(([la,lo])=>[lo*this.kx,la*this.ky]);this.cum=[0];
+    for(let i=1;i<this.xy.length;i++)this.cum.push(this.cum[i-1]+Math.hypot(this.xy[i][0]-this.xy[i-1][0],this.xy[i][1]-this.xy[i-1][1]));
+    this.cell=cell;this.grid=new Map();
+    for(let i=0;i<this.xy.length-1;i++){const[a,b]=this.xy[i],[c,d]=this.xy[i+1];
+      for(let gx=Math.floor(Math.min(a,c)/cell);gx<=Math.floor(Math.max(a,c)/cell);gx++)
+        for(let gy=Math.floor(Math.min(b,d)/cell);gy<=Math.floor(Math.max(b,d)/cell);gy++){
+          const k=gx+","+gy;if(!this.grid.has(k))this.grid.set(k,[]);this.grid.get(k).push(i);}}
+  }
+  get length(){return this.cum[this.cum.length-1];}
+  bbox(pad){const la=this.coords.map(c=>c[0]),lo=this.coords.map(c=>c[1]);const dla=pad/111,dlo=pad/(111*Math.cos(this.lat0*Math.PI/180));
+    return[Math.min(...la)-dla,Math.min(...lo)-dlo,Math.max(...la)+dla,Math.max(...lo)+dlo];}
+  nearest(lat,lon,max){const px=lon*this.kx,py=lat*this.ky,reach=Math.ceil(max/this.cell),gx=Math.floor(px/this.cell),gy=Math.floor(py/this.cell);
+    const seen=new Set();let best=null;
+    for(let dx=-reach;dx<=reach;dx++)for(let dy=-reach;dy<=reach;dy++){for(const i of this.grid.get((gx+dx)+","+(gy+dy))||[]){
+      if(seen.has(i))continue;seen.add(i);const[x1,y1]=this.xy[i],[x2,y2]=this.xy[i+1],vx=x2-x1,vy=y2-y1,L2=vx*vx+vy*vy;
+      const t=L2?Math.max(0,Math.min(1,((px-x1)*vx+(py-y1)*vy)/L2)):0,d=Math.hypot(px-(x1+t*vx),py-(y1+t*vy));
+      if(!best||d<best[0])best=[d,this.cum[i]+t*Math.sqrt(L2)];}}
+    return best&&best[0]<=max?best:null;}
+}
+
+// ───────── network (live mode) ─────────
+async function getJSON(url,opts={}){const r=await fetch(url,opts);if(!r.ok)throw new Error(r.status+" "+url.slice(0,60));return r.json();}
+async function geocode(q){
+  const m=q.trim().match(/^(-?\d+(?:\.\d+)?)\s*[,;]\s*(-?\d+(?:\.\d+)?)$/);if(m)return[+m[1],+m[2],q];
+  const res=await getJSON(NOMI+"?"+new URLSearchParams({q,format:"json",limit:1,countrycodes:"fr,ch","accept-language":"fr"}));
+  if(!res.length)throw new Error(`Adresse « ${q} » introuvable en France ou en Suisse.`);
+  return[+res[0].lat,+res[0].lon,res[0].display_name];}
+async function osrm(pts,full=true){
+  const c=pts.map(([la,lo])=>lo.toFixed(6)+","+la.toFixed(6)).join(";");
+  const d=await getJSON(`${OSRM}/route/v1/driving/${c}?overview=${full?"full":"false"}&geometries=geojson`);
+  if(d.code!=="Ok")throw new Error("Échec du calcul d’itinéraire : "+d.code);const r=d.routes[0];
+  return{km:r.distance/1000,min:r.duration/60,coords:full?r.geometry.coordinates.map(([lo,la])=>[la,lo]):null};}
+async function loadFR(bb,fuels){
+  const pre=fuels.map(f=>FUELS[f][0]);const sel=["id","adresse","ville","cp","geom","pop","horaires_automate_24_24"];
+  pre.forEach(p=>sel.push(p+"_prix",p+"_maj"));
+  const where=`in_bbox(geom, ${bb[0].toFixed(5)}, ${bb[1].toFixed(5)}, ${bb[2].toFixed(5)}, ${bb[3].toFixed(5)})`;
+  let rows;try{rows=await getJSON(FR_API+"?"+new URLSearchParams({select:sel.join(","),where}));}
+  catch(e){rows=await getJSON(FR_API+"?"+new URLSearchParams({where}));}
+  const cut=Date.now()-MAX_AGE_D*864e5,out=[];
+  for(const r of rows){const g=r.geom;if(!g||g.lat==null)continue;let best=null;
+    fuels.forEach((f,i)=>{let p=r[pre[i]+"_prix"];if(!p)return;const dt=r[pre[i]+"_maj"]?new Date(r[pre[i]+"_maj"]):null;
+      if(dt&&dt.getTime()<cut)return;p=+p;if(p>5)p/=1000;if(!best||p<best.p)best={p,f,dt};});
+    if(!best)continue;const city=title(r.ville||"");
+    out.push({id:"FR-"+r.id,country:"FR",name:"Station "+city,address:`${title(r.adresse||"")}, ${r.cp||""} ${city}`,
+      lat:+g.lat,lon:+g.lon,native:best.p,cur:"EUR",fuel:best.f,updated:best.dt?best.dt.toISOString():"",
+      motorway:r.pop==="A",h24:/^(oui|true|1)$/i.test(String(r.horaires_automate_24_24||"")),est:false});}
+  return out;}
+async function loadCH(bb,fuels){
+  if(bb[2]<CH_BBOX[0]||bb[0]>CH_BBOX[2]||bb[3]<CH_BBOX[1]||bb[1]>CH_BBOX[3])return[];
+  const q=`[out:json][timeout:90];area["ISO3166-1"="CH"][admin_level=2]->.ch;(node(area.ch)["amenity"="fuel"](${bb.join(",")});way(area.ch)["amenity"="fuel"](${bb.join(",")}););out center tags;`;
+  const d=await getJSON(OVERPASS,{method:"POST",body:new URLSearchParams({data:q})});const out=[];
+  for(const el of d.elements||[]){const t=el.tags||{},lat=el.lat??el.center?.lat,lon=el.lon??el.center?.lon;if(lat==null)continue;
+    let best=null;for(const f of fuels){if(f==="e10")continue;const tag=FUELS[f][1];if(tag&&t[tag]==="no")continue;
+      if(CH_DEFAULT[f]!=null&&(!best||CH_DEFAULT[f]<best.p))best={p:CH_DEFAULT[f],f};}
+    if(!best)continue;const name=t.name||t.brand||"Tankstelle";
+    const addr=[[t["addr:street"],t["addr:housenumber"]].filter(Boolean).join(" "),[t["addr:postcode"],t["addr:city"]].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+    out.push({id:`CH-${el.type}/${el.id}`,country:"CH",name,address:addr||"Suisse",lat,lon,native:best.p,cur:"CHF",fuel:best.f,
+      updated:"",motorway:/autobahn|raststätte/i.test(name),h24:t.opening_hours==="24/7",est:true});}
+  return out;}
+async function fx(){try{return(await getJSON(FX)).rates.EUR;}catch(e){return 1.07;}}
+const title=s=>s.toLowerCase().replace(/(^|[\s'-])\p{L}/gu,m=>m.toUpperCase());
+
+// ───────── optimiser (shared by live + example) ─────────
+function cost(s,o){return(o.litres+s.detKm*o.conso/100)*s.eur+0;}
+function screen(stations,route,o,rate){
+  const c=[];for(const s of stations){s.eur=s.native*(s.cur==="CHF"?rate:1);const h=route.nearest(s.lat,s.lon,o.corr);if(!h)continue;
+    [s.off,s.along]=h;s.detKm=2*s.off*ROAD;s.detMin=s.detKm/50*60+(s.off>.15?2:0);s.exact=false;s.total=cost(s,o);c.push(s);}
+  return c.sort((a,b)=>a.total-b.total);}
+function finish(cands,o){
+  const ranked=(cands.some(s=>s.exact)?cands.filter(s=>s.exact):cands).sort((a,b)=>a.total-b.total);
+  const prices=cands.map(s=>s.eur).sort((a,b)=>a-b),med=a=>a.length?a[Math.floor((a.length-1)/2)]/2+a[Math.ceil((a.length-1)/2)]/2:0;
+  const onr=cands.filter(s=>s.off<.3).map(s=>s.eur).sort((a,b)=>a-b);
+  return{ranked,ref:{median:med(prices),onRoute:med(onr.length?onr:prices),max:prices[prices.length-1]}};}
+
+async function runLive(o){
+  say("Recherche des adresses…");const A=await geocode(o.from);await new Promise(r=>setTimeout(r,1000));const B=await geocode(o.to);
+  say("Calcul de l’itinéraire…");const base=await osrm([A,B]);const route=new RouteIndex(base.coords);const bb=route.bbox(o.corr+1);
+  say("Chargement des prix…");
+  const [fr,ch,rate]=await Promise.all([loadFR(bb,o.fuels).catch(()=>[]),loadCH(bb,o.fuels).catch(()=>[]),fx()]);
+  const cands=screen(fr.concat(ch),route,o,rate);
+  if(!cands.length)throw new Error("Aucune station avec un prix à jour à moins de "+o.corr+" km de ce trajet. Augmentez l’écart max. ou choisissez un autre carburant.");
+  for(let i=0;i<Math.min(12,cands.length);i++){const s=cands[i];say(`Calcul des détours… ${i+1}/${Math.min(12,cands.length)}`);
+    try{const v=await osrm([A,[s.lat,s.lon],B],false);s.detKm=Math.max(0,v.km-base.km);s.detMin=Math.max(0,v.min-base.min);s.exact=true;s.total=cost(s,o);}catch(e){}
+    await new Promise(r=>setTimeout(r,250));}
+  return{A,B,base,route,cands,rate,...finish(cands,o),live:true};}
+
+// ───────── example trip (shown when outside servers are unreachable) ─────────
+function example(o){
+  // Approximate Annecy → Genève via A41. Prices are ILLUSTRATIVE, not today's.
+  const way=[[45.8992,6.1294],[45.9205,6.1160],[45.9560,6.1045],[45.9880,6.1010],[46.0300,6.1050],[46.0650,6.0950],
+    [46.1050,6.0850],[46.1380,6.0800],[46.1600,6.0950],[46.1800,6.1200],[46.2040,6.1430]];
+  const coords=[];for(let i=0;i<way.length-1;i++)for(let k=0;k<10;k++){const t=k/10;coords.push([way[i][0]+(way[i+1][0]-way[i][0])*t,way[i][1]+(way[i+1][1]-way[i][1])*t]);}
+  coords.push(way[way.length-1]);const route=new RouteIndex(coords);
+  const S=(id,c,n,a,lat,lon,p,mw,h24,est)=>({id,country:c,name:n,address:a,lat,lon,native:p,cur:c==="CH"?"CHF":"EUR",fuel:o.fuels[0]==="e10"?"e10":o.fuels[0],updated:"",motorway:mw,h24,est});
+  const bump=o.fuels[0]==="diesel"?0:0.06;
+  const st=[S("x1","FR","Station Annecy","Avenue de Genève, 74000 Annecy",45.912,6.123,1.789+bump,false,true,false),
+    S("x2","FR","Station Pringy","Route de Frangy, 74370 Pringy",45.946,6.118,1.734+bump,false,true,false),
+    S("x3","FR","Aire de Bellegarde","A41, 74350 Cruseilles",46.029,6.104,1.969+bump,true,true,false),
+    S("x4","FR","Station Cruseilles","Route d'Annecy, 74350 Cruseilles",46.034,6.112,1.759+bump,false,false,false),
+    S("x5","FR","Station Saint-Julien","Zone d'activités, 74160 Saint-Julien-en-Genevois",46.141,6.091,1.699+bump,false,true,false),
+    S("x6","FR","Station Archamps","Route de Collonges, 74160 Archamps",46.131,6.115,1.719+bump,false,true,false),
+    S("x7","CH","Station Carouge","Route de Saint-Julien, 1227 Carouge",46.180,6.130,2.05-bump/2,false,false,true),
+    S("x8","CH","Station Plan-les-Ouates","Route de Base, 1228 Plan-les-Ouates",46.168,6.118,2.08-bump/2,false,true,true)];
+  const rate=1.07,base={km:route.length*1.12,min:route.length*1.12/72*60,coords};
+  const cands=screen(st,route,{...o,corr:Math.max(o.corr,3)},rate);
+  for(const s of cands){s.detKm=+(s.off*2.4).toFixed(1);s.detMin=s.off>.15?Math.round(s.off*3+2):0;s.exact=true;s.total=cost(s,o);}
+  return{A:[45.8992,6.1294,"Annecy"],B:[46.204,6.143,"Genève"],base,route,cands,rate,...finish(cands,o),live:false};}
+
+// ───────── render ─────────
+const eur=v=>v.toLocaleString("fr-FR",{style:"currency",currency:"EUR"});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function say(t){$("status").textContent=t;}
+function render(R,o){
+  const L=o.litres,refCost=L*R.ref.onRoute,h=Math.floor(R.base.min/60),m=Math.round(R.base.min%60);
+  $("summary").innerHTML=`<span>Trajet <b>${R.base.km.toFixed(0)} km</b> · <b>${h} h ${String(m).padStart(2,"0")}</b></span>
+    <span><b>${R.cands.length}</b> stations à moins de ${o.corr} km</span>
+    <span>Prix habituel sur le trajet <b>${R.ref.onRoute.toFixed(3)} €/L</b></span>
+    <span>Le plus cher <b>${R.ref.max.toFixed(3)} €/L</b></span>`;
+  const top=R.ranked.slice(0,3);
+  $("picks").innerHTML=top.map((s,i)=>{const sv=refCost-s.total;
+    return`<article class="pick${i?"":" first"}">
+      <div class="pick-top"><div><p class="name">${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(s.name)}</p><p class="addr">${esc(s.address)}</p></div><span class="rank">${i+1}</span></div>
+      <div class="totem"><span class="p">${s.est?"~":""}${s.eur.toFixed(3)}</span><span class="u">€/L ${FUELS[s.fuel][2]}</span></div>
+      <div class="chips">${s.motorway?'<span class="chip a">Autoroute</span>':""}${s.h24?'<span class="chip">Automate 24/24</span>':""}${s.est?'<span class="chip est">Prix estimé</span>':""}${s.cur==="CHF"?`<span class="chip">${s.native.toFixed(2)} CHF/L</span>`:""}</div>
+      <dl class="facts"><dt>Position</dt><dd>km ${s.along.toFixed(0)} sur ${R.base.km.toFixed(0)}</dd>
+        <dt>Détour</dt><dd>+${s.detKm.toFixed(1)} km · +${Math.round(s.detMin)} min${s.exact?"":" (estimé)"}</dd>
+        <dt>Le plein</dt><dd>${eur(s.total)}</dd>
+        <dt>vs habituel</dt><dd class="save ${sv>=0?"pos":"neg"}">${sv>=0?"économie de ":"surcoût de "}${eur(Math.abs(sv))}</dd></dl>
+      <a class="go" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&origin=${R.A[0]},${R.A[1]}&destination=${R.B[0]},${R.B[1]}&waypoints=${s.lat},${s.lon}">Itinéraire via cette station ↗</a>
+    </article>`;}).join("");
+  drawChart(R,top);
+  const rk=new Map(top.map((s,i)=>[s.id,i+1]));
+  $("tbl").innerHTML=`<thead><tr><th>#</th><th>Station</th><th class="num">€/L</th><th class="num">km</th><th class="num">Détour</th><th class="num">Le plein</th><th class="num">vs habituel</th></tr></thead><tbody>`+
+    R.ranked.map(s=>{const sv=refCost-s.total;return`<tr class="${rk.has(s.id)?"top":""}"><td>${rk.get(s.id)||""}</td><td>${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(s.name)}${s.motorway?" · A":""}</td>
+      <td class="num">${s.est?"~":""}${s.eur.toFixed(3)}</td><td class="num">${s.along.toFixed(0)}</td><td class="num">+${s.detKm.toFixed(1)} km</td>
+      <td class="num">${eur(s.total)}</td><td class="num save ${sv>=0?"pos":"neg"}">${sv>=0?"+":"−"}${eur(Math.abs(sv))}</td></tr>`;}).join("")+"</tbody>";
+}
+function drawChart(R,top){
+  const W=760,H=260,ml=54,mr=18,mt=18,mb=38,iw=W-ml-mr,ih=H-mt-mb,L=R.route.length;
+  const ps=R.cands.map(s=>s.eur);let lo=Math.min(...ps),hi=Math.max(...ps);const pad=Math.max(.02,(hi-lo)*.15);lo-=pad;hi+=pad;
+  const x=k=>ml+k/L*iw,y=p=>mt+(1-(p-lo)/(hi-lo))*ih;
+  const step=[.02,.05,.1,.2].find(s=>(hi-lo)/s<=6)||.5;let yt="";
+  for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step)yt+=`<line x1="${ml}" x2="${W-mr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${ml-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${v.toFixed(2)}</text>`;
+  const kstep=[5,10,20,50,100].find(s=>L/s<=8)||200;let xt="";
+  for(let k=0;k<=L+.01;k+=kstep)xt+=`<text x="${x(k)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="var(--muted)">${k}</text>`;
+  const rk=new Map(top.map((s,i)=>[s.id,i+1]));
+  const dots=R.cands.slice().sort((a,b)=>(rk.has(a.id)?1:0)-(rk.has(b.id)?1:0)).map(s=>{const cx=x(s.along),cy=y(s.eur),r=rk.get(s.id);
+    const fill=s.country==="CH"?"var(--surface)":"var(--fg)";
+    return r?`<circle cx="${cx}" cy="${cy}" r="11" fill="var(--accent)"/><text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-ink)">${r}</text>`
+      :`<circle cx="${cx}" cy="${cy}" r="4.5" fill="${fill}" stroke="var(--fg)" stroke-width="1.2" opacity=".75"><title>${esc(s.name)} ${s.eur.toFixed(3)} €/L</title></circle>`;}).join("");
+  const ref=`<line x1="${ml}" x2="${W-mr}" y1="${y(R.ref.onRoute)}" y2="${y(R.ref.onRoute)}" stroke="var(--warn)" stroke-dasharray="5 4"/><text x="${W-mr}" y="${y(R.ref.onRoute)-6}" text-anchor="end" font-size="11" fill="var(--warn)">prix habituel</text>`;
+  $("chart").innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Prix des stations le long du trajet">
+    ${yt}${ref}<line x1="${ml}" x2="${W-mr}" y1="${H-mb}" y2="${H-mb}" stroke="var(--muted)"/>${xt}
+    <text x="${ml+iw/2}" y="${H-4}" text-anchor="middle" font-size="11" fill="var(--muted)">km depuis ${esc(String(R.A[2]).split(",")[0])} → ${esc(String(R.B[2]).split(",")[0])}</text>
+    <text x="14" y="${mt+ih/2}" transform="rotate(-90 14 ${mt+ih/2})" text-anchor="middle" font-size="11" fill="var(--muted)">€ par litre</text>${dots}</svg>
+    <div class="legend"><span>● France</span><span>○ Suisse (prix estimé)</span></div>`;
+}
+
+// ───────── wiring ─────────
+function opts(){return{from:$("from").value,to:$("to").value,fuels:$("fuel").value.split(","),litres:50,
+  conso:6.5,corr:+$("corr").value||3,timev:0};}
+function showExample(o,why){
+  const n=$("notice");n.hidden=false;
+  n.innerHTML=`<strong>Trajet d’exemple, pas les prix du jour.</strong> ${why} Les chiffres ci-dessous illustrent un trajet Annecy → Genève pour montrer le fonctionnement du classement. Cliquez sur « Trouver les meilleures stations » pour lancer une recherche avec les prix du jour.`;
+  render(example(o),o);}
+$("f").addEventListener("submit",async e=>{e.preventDefault();const o=opts();$("go").disabled=true;
+  try{const R=await runLive(o);$("notice").hidden=true;render(R,o);say(`Mis à jour à ${new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})} · données en direct`);}
+  catch(err){if(err instanceof TypeError){showExample(o,"Cette page ne peut pas joindre les serveurs d’itinéraire et de prix depuis ici.");say("");}
+    else{say(err.message);}}
+  finally{$("go").disabled=false;}});
+["fuel","corr"].forEach(id=>$(id).addEventListener("change",()=>{if(!$("notice").hidden)showExample(opts(),"Les données en direct ne sont pas accessibles ici.");}));
+showExample(opts(),"Voici un exemple pour illustrer.");
+</script>
+
+</body></html>
