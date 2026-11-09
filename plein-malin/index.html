@@ -80,6 +80,13 @@ button[disabled]{opacity:.6;cursor:progress}
 .save.pos{color:var(--good)} .save.neg{color:var(--bad)}
 .go{font-size:.86rem;font-weight:600;color:var(--accent);text-decoration:none}
 .go:hover{text-decoration:underline}
+.chip.ok{border-color:var(--good);color:var(--good)}
+.links{display:grid;gap:6px}
+.btn{display:block;text-align:center;text-decoration:none;font-weight:600;font-size:.88rem;padding:9px 12px;border-radius:8px;background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.minor{font-size:.82rem;color:var(--muted)}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer}
+.wz iframe{width:100%;height:380px;border:0;border-radius:8px;display:block;background:var(--bg)}
 
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;min-width:0}
 .chart{overflow-x:auto}
@@ -134,6 +141,12 @@ tr.top td{font-weight:600}
   <div class="summary" id="summary"></div>
   <section class="picks" id="picks" aria-label="Stations recommandées"></section>
 
+  <section class="panel" id="wzpanel" hidden>
+    <h2>Carte Waze en direct</h2>
+    <p class="foot" id="wzcap"></p>
+    <div class="wz"><iframe id="wz" title="Carte Waze en direct" loading="lazy" allowfullscreen></iframe></div>
+  </section>
+
   <section class="panel">
     <h2>Sur le trajet</h2>
     <div class="legend"><span>Chaque point est une station : de gauche à droite, les km depuis le départ ; plus c’est haut, plus c’est cher. Les pastilles numérotées sont les stations recommandées.</span></div>
@@ -145,7 +158,7 @@ tr.top td{font-weight:600}
     <div class="tbl"><table id="tbl"></table></div>
   </section>
 
-  <p class="foot">France : données officielles Prix des carburants (mises à jour toutes les 10 min environ). Suisse : pas de données de prix publiques officielles, les stations viennent d’OpenStreetMap et les prix marqués « estimé » sont des moyennes nationales. Calcul basé sur un plein de 50 L et une consommation de 6,5 L/100 km. Itinéraire par OSRM, adresses par Nominatim, conversion CHF→EUR au taux BCE.</p>
+  <p class="foot">France : données officielles Prix des carburants (mises à jour toutes les 10 min environ). Suisse : pas de données de prix publiques officielles, les stations viennent d’OpenStreetMap et les prix marqués « estimé » sont des moyennes nationales. Calcul basé sur un plein de 50 L et une consommation de 6,5 L/100 km. Waze n’accepte pas d’étape dans un lien : le bouton 1 vous guide jusqu’à la station, le bouton 2 vers votre destination. Les stations sont cherchées sur l’itinéraire principal et ses variantes pour coller au trajet choisi par Waze. Itinéraire par OSRM, adresses par Nominatim, conversion CHF→EUR au taux BCE.</p>
 </div>
 
 <script>
@@ -196,11 +209,11 @@ async function geocode(q){
   const res=await getJSON(NOMI+"?"+new URLSearchParams({q,format:"json",limit:1,countrycodes:"fr,ch","accept-language":"fr"}));
   if(!res.length)throw new Error(`Adresse « ${q} » introuvable en France ou en Suisse.`);
   return[+res[0].lat,+res[0].lon,res[0].display_name];}
-async function osrm(pts,full=true){
+async function osrm(pts,full=true,alts=false){
   const c=pts.map(([la,lo])=>lo.toFixed(6)+","+la.toFixed(6)).join(";");
-  const d=await getJSON(`${OSRM}/route/v1/driving/${c}?overview=${full?"full":"false"}&geometries=geojson`);
-  if(d.code!=="Ok")throw new Error("Échec du calcul d’itinéraire : "+d.code);const r=d.routes[0];
-  return{km:r.distance/1000,min:r.duration/60,coords:full?r.geometry.coordinates.map(([lo,la])=>[la,lo]):null};}
+  const d=await getJSON(`${OSRM}/route/v1/driving/${c}?overview=${full?"full":"false"}&geometries=geojson${alts?"&alternatives=true":""}`);
+  if(d.code!=="Ok")throw new Error("Échec du calcul d’itinéraire : "+d.code);const conv=r=>({km:r.distance/1000,min:r.duration/60,coords:full?r.geometry.coordinates.map(([lo,la])=>[la,lo]):null});
+  return alts?d.routes.map(conv):conv(d.routes[0]);}
 async function loadFR(bb,fuels){
   const pre=fuels.map(f=>FUELS[f][0]);const sel=["id","adresse","ville","cp","geom","pop","horaires_automate_24_24"];
   pre.forEach(p=>sel.push(p+"_prix",p+"_maj"));
@@ -234,7 +247,7 @@ const title=s=>s.toLowerCase().replace(/(^|[\s'-])\p{L}/gu,m=>m.toUpperCase());
 // ───────── optimiser (shared by live + example) ─────────
 function cost(s,o){return(o.litres+s.detKm*o.conso/100)*s.eur+0;}
 function screen(stations,route,o,rate){
-  const c=[];for(const s of stations){s.eur=s.native*(s.cur==="CHF"?rate:1);const h=route.nearest(s.lat,s.lon,o.corr);if(!h)continue;
+  const rs=Array.isArray(route)?route:[route];const c=[];for(const s of stations){s.eur=s.native*(s.cur==="CHF"?rate:1);const hits=rs.map(r=>r.nearest(s.lat,s.lon,o.corr));const h=hits.find(Boolean);if(!h)continue;s.onMain=!!hits[0];s.onAll=hits.every(Boolean);s.nRoutes=rs.length;
     [s.off,s.along]=h;s.detKm=2*s.off*ROAD;s.detMin=s.detKm/50*60+(s.off>.15?2:0);s.exact=false;s.total=cost(s,o);c.push(s);}
   return c.sort((a,b)=>a.total-b.total);}
 function finish(cands,o){
@@ -245,15 +258,16 @@ function finish(cands,o){
 
 async function runLive(o){
   say("Recherche des adresses…");const A=await geocode(o.from);await new Promise(r=>setTimeout(r,1000));const B=await geocode(o.to);
-  say("Calcul de l’itinéraire…");const base=await osrm([A,B]);const route=new RouteIndex(base.coords);const bb=route.bbox(o.corr+1);
+  say("Calcul de l’itinéraire…");const alts=await osrm([A,B],true,true);const base=alts[0];const route=new RouteIndex(base.coords);const idx=alts.map((r,i)=>i?new RouteIndex(r.coords):route);
+  const bb=idx.map(r=>r.bbox(o.corr+1)).reduce((a,b)=>[Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[2],b[2]),Math.max(a[3],b[3])]);
   say("Chargement des prix…");
   const [fr,ch,rate]=await Promise.all([loadFR(bb,o.fuels).catch(()=>[]),loadCH(bb,o.fuels).catch(()=>[]),fx()]);
-  const cands=screen(fr.concat(ch),route,o,rate);
+  const cands=screen(fr.concat(ch),idx,o,rate);
   if(!cands.length)throw new Error("Aucune station avec un prix à jour à moins de "+o.corr+" km de ce trajet. Augmentez l’écart max. ou choisissez un autre carburant.");
   for(let i=0;i<Math.min(12,cands.length);i++){const s=cands[i];say(`Calcul des détours… ${i+1}/${Math.min(12,cands.length)}`);
     try{const v=await osrm([A,[s.lat,s.lon],B],false);s.detKm=Math.max(0,v.km-base.km);s.detMin=Math.max(0,v.min-base.min);s.exact=true;s.total=cost(s,o);}catch(e){}
     await new Promise(r=>setTimeout(r,250));}
-  return{A,B,base,route,cands,rate,...finish(cands,o),live:true};}
+  return{A,B,base,route,cands,rate,...finish(cands,o),live:true,nAlts:alts.length};}
 
 // ───────── example trip (shown when outside servers are unreachable) ─────────
 function example(o){
@@ -284,7 +298,7 @@ function say(t){$("status").textContent=t;}
 function render(R,o){
   const L=o.litres,refCost=L*R.ref.onRoute,h=Math.floor(R.base.min/60),m=Math.round(R.base.min%60);
   $("summary").innerHTML=`<span>Trajet <b>${R.base.km.toFixed(0)} km</b> · <b>${h} h ${String(m).padStart(2,"0")}</b></span>
-    <span><b>${R.cands.length}</b> stations à moins de ${o.corr} km</span>
+    <span><b>${R.cands.length}</b> stations à moins de ${o.corr} km</span>${R.nAlts>1?`<span><b>${R.nAlts}</b> itinéraires analysés</span>`:""}
     <span>Prix habituel sur le trajet <b>${R.ref.onRoute.toFixed(3)} €/L</b></span>
     <span>Le plus cher <b>${R.ref.max.toFixed(3)} €/L</b></span>`;
   const top=R.ranked.slice(0,3);
@@ -292,14 +306,17 @@ function render(R,o){
     return`<article class="pick${i?"":" first"}">
       <div class="pick-top"><div><p class="name">${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(s.name)}</p><p class="addr">${esc(s.address)}</p></div><span class="rank">${i+1}</span></div>
       <div class="totem"><span class="p">${s.est?"~":""}${s.eur.toFixed(3)}</span><span class="u">€/L ${FUELS[s.fuel][2]}</span></div>
-      <div class="chips">${s.motorway?'<span class="chip a">Autoroute</span>':""}${s.h24?'<span class="chip">Automate 24/24</span>':""}${s.est?'<span class="chip est">Prix estimé</span>':""}${s.cur==="CHF"?`<span class="chip">${s.native.toFixed(2)} CHF/L</span>`:""}</div>
+      <div class="chips">${s.motorway?'<span class="chip a">Autoroute</span>':""}${s.h24?'<span class="chip">Automate 24/24</span>':""}${s.nRoutes>1?(s.onAll?'<span class="chip ok">Sur tous les itinéraires</span>':(s.onMain?'<span class="chip">Itinéraire principal</span>':'<span class="chip">Itinéraire bis</span>')):""}${s.est?'<span class="chip est">Prix estimé</span>':""}${s.cur==="CHF"?`<span class="chip">${s.native.toFixed(2)} CHF/L</span>`:""}</div>
       <dl class="facts"><dt>Position</dt><dd>km ${s.along.toFixed(0)} sur ${R.base.km.toFixed(0)}</dd>
         <dt>Détour</dt><dd>+${s.detKm.toFixed(1)} km · +${Math.round(s.detMin)} min${s.exact?"":" (estimé)"}</dd>
         <dt>Le plein</dt><dd>${eur(s.total)}</dd>
         <dt>vs habituel</dt><dd class="save ${sv>=0?"pos":"neg"}">${sv>=0?"économie de ":"surcoût de "}${eur(Math.abs(sv))}</dd></dl>
-      <a class="go" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&origin=${R.A[0]},${R.A[1]}&destination=${R.B[0]},${R.B[1]}&waypoints=${s.lat},${s.lon}">Itinéraire via cette station ↗</a>
+      <div class="links"><a class="btn" target="_blank" rel="noopener" href="https://waze.com/ul?ll=${s.lat},${s.lon}&navigate=yes&utm_source=plein-malin">1. Aller à la station avec Waze ↗</a>
+        <a class="btn ghost" target="_blank" rel="noopener" href="https://waze.com/ul?ll=${R.B[0]},${R.B[1]}&navigate=yes&utm_source=plein-malin">2. Puis reprendre vers ${esc(String(R.B[2]).split(",")[0])} ↗</a>
+        <div class="minor">${R.live?`<button type="button" class="linkbtn" data-wz="${s.lat},${s.lon}" data-n="${esc(s.name)}">Voir sur la carte Waze</button> · `:""}<a class="go" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&origin=${R.A[0]},${R.A[1]}&destination=${R.B[0]},${R.B[1]}&waypoints=${s.lat},${s.lon}">Google Maps ↗</a></div></div>
     </article>`;}).join("");
   drawChart(R,top);
+  $("wzpanel").hidden=!R.live;if(R.live&&top[0])showWaze(top[0]);
   const rk=new Map(top.map((s,i)=>[s.id,i+1]));
   $("tbl").innerHTML=`<thead><tr><th>#</th><th>Station</th><th class="num">€/L</th><th class="num">km</th><th class="num">Détour</th><th class="num">Le plein</th><th class="num">vs habituel</th></tr></thead><tbody>`+
     R.ranked.map(s=>{const sv=refCost-s.total;return`<tr class="${rk.has(s.id)?"top":""}"><td>${rk.get(s.id)||""}</td><td>${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(s.name)}${s.motorway?" · A":""}</td>
@@ -327,6 +344,10 @@ function drawChart(R,top){
     <div class="legend"><span>● France</span><span>○ Suisse (prix estimé)</span></div>`;
 }
 
+function showWaze(s){$("wz").src=`https://embed.waze.com/fr/iframe?zoom=15&lat=${s.lat}&lon=${s.lon}&pin=1`;
+  $("wzcap").textContent=`${s.name} : trafic en direct autour de la station.`;}
+$("picks").addEventListener("click",e=>{const b=e.target.closest("[data-wz]");if(!b)return;const[la,lo]=b.dataset.wz.split(",");
+  showWaze({lat:la,lon:lo,name:b.dataset.n});$("wzpanel").scrollIntoView({behavior:"smooth",block:"start"});});
 // ───────── wiring ─────────
 function opts(){return{from:$("from").value,to:$("to").value,fuels:$("fuel").value.split(","),litres:50,
   conso:6.5,corr:+$("corr").value||3,timev:0};}
