@@ -85,8 +85,7 @@ button[disabled]{opacity:.6;cursor:progress}
 .btn{display:block;text-align:center;text-decoration:none;font-weight:600;font-size:.88rem;padding:9px 12px;border-radius:8px;background:var(--accent);color:var(--accent-ink)}
 .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
 .minor{font-size:.82rem;color:var(--muted)}
-.linkbtn{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer}
-.wz iframe{width:100%;height:380px;border:0;border-radius:8px;display:block;background:var(--bg)}
+
 
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;min-width:0}
 .chart{overflow-x:auto}
@@ -141,12 +140,6 @@ tr.top td{font-weight:600}
   <div class="summary" id="summary"></div>
   <section class="picks" id="picks" aria-label="Stations recommandées"></section>
 
-  <section class="panel" id="wzpanel" hidden>
-    <h2>Carte Waze en direct</h2>
-    <p class="foot" id="wzcap"></p>
-    <div class="wz"><iframe id="wz" title="Carte Waze en direct" loading="lazy" allowfullscreen></iframe></div>
-  </section>
-
   <section class="panel">
     <h2>Sur le trajet</h2>
     <div class="legend"><span>Chaque point est une station : de gauche à droite, les km depuis le départ ; plus c’est haut, plus c’est cher. Les pastilles numérotées sont les stations recommandées.</span></div>
@@ -158,7 +151,7 @@ tr.top td{font-weight:600}
     <div class="tbl"><table id="tbl"></table></div>
   </section>
 
-  <p class="foot">France : données officielles Prix des carburants (mises à jour toutes les 10 min environ). Suisse : pas de données de prix publiques officielles, les stations viennent d’OpenStreetMap et les prix marqués « estimé » sont des moyennes nationales. Calcul basé sur un plein de 50 L et une consommation de 6,5 L/100 km. Waze n’accepte pas d’étape dans un lien : le bouton 1 vous guide jusqu’à la station, le bouton 2 vers votre destination. Les stations sont cherchées sur l’itinéraire principal et ses variantes pour coller au trajet choisi par Waze. Itinéraire par OSRM, adresses par Nominatim, conversion CHF→EUR au taux BCE.</p>
+  <p class="foot">France : données officielles Prix des carburants (mises à jour toutes les 10 min environ). Suisse : pas de données de prix publiques officielles, les stations viennent d’OpenStreetMap et les prix marqués « estimé » sont des moyennes nationales. Calcul basé sur un plein de 50 L et une consommation de 6,5 L/100 km. Le bouton Google Maps ouvre le trajet complet depuis votre position, avec arrêt à la station. Les stations sont cherchées sur l’itinéraire principal et ses variantes. Itinéraire par OSRM, adresses par Nominatim, conversion CHF→EUR au taux BCE.</p>
 </div>
 
 <script>
@@ -311,12 +304,10 @@ function render(R,o){
         <dt>Détour</dt><dd>+${s.detKm.toFixed(1)} km · +${Math.round(s.detMin)} min${s.exact?"":" (estimé)"}</dd>
         <dt>Le plein</dt><dd>${eur(s.total)}</dd>
         <dt>vs habituel</dt><dd class="save ${sv>=0?"pos":"neg"}">${sv>=0?"économie de ":"surcoût de "}${eur(Math.abs(sv))}</dd></dl>
-      <div class="links"><a class="btn" target="_blank" rel="noopener" href="https://waze.com/ul?ll=${s.lat},${s.lon}&navigate=yes&utm_source=plein-malin">1. Aller à la station avec Waze ↗</a>
-        <a class="btn ghost" target="_blank" rel="noopener" href="https://waze.com/ul?ll=${R.B[0]},${R.B[1]}&navigate=yes&utm_source=plein-malin">2. Puis reprendre vers ${esc(String(R.B[2]).split(",")[0])} ↗</a>
-        <div class="minor">${R.live?`<button type="button" class="linkbtn" data-wz="${s.lat},${s.lon}" data-n="${esc(s.name)}">Voir sur la carte Waze</button> · `:""}<a class="go" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&origin=${R.A[0]},${R.A[1]}&destination=${R.B[0]},${R.B[1]}&waypoints=${s.lat},${s.lon}">Google Maps ↗</a></div></div>
+      <div class="links"><a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${R.B[0]},${R.B[1]}&waypoints=${s.lat},${s.lon}&travelmode=driving">Y aller avec Google Maps ↗</a>
+        <div class="minor">Trajet complet jusqu’à ${esc(String(R.B[2]).split(",")[0])}, avec arrêt à la station.</div></div>
     </article>`;}).join("");
   drawChart(R,top);
-  $("wzpanel").hidden=!R.live;if(R.live&&top[0])showWaze(top[0]);
   const rk=new Map(top.map((s,i)=>[s.id,i+1]));
   $("tbl").innerHTML=`<thead><tr><th>#</th><th>Station</th><th class="num">€/L</th><th class="num">km</th><th class="num">Détour</th><th class="num">Le plein</th><th class="num">vs habituel</th></tr></thead><tbody>`+
     R.ranked.map(s=>{const sv=refCost-s.total;return`<tr class="${rk.has(s.id)?"top":""}"><td>${rk.get(s.id)||""}</td><td>${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(s.name)}${s.motorway?" · A":""}</td>
@@ -344,10 +335,6 @@ function drawChart(R,top){
     <div class="legend"><span>● France</span><span>○ Suisse (prix estimé)</span></div>`;
 }
 
-function showWaze(s){$("wz").src=`https://embed.waze.com/fr/iframe?zoom=15&lat=${s.lat}&lon=${s.lon}&pin=1`;
-  $("wzcap").textContent=`${s.name} : trafic en direct autour de la station.`;}
-$("picks").addEventListener("click",e=>{const b=e.target.closest("[data-wz]");if(!b)return;const[la,lo]=b.dataset.wz.split(",");
-  showWaze({lat:la,lon:lo,name:b.dataset.n});$("wzpanel").scrollIntoView({behavior:"smooth",block:"start"});});
 // ───────── wiring ─────────
 function opts(){return{from:$("from").value,to:$("to").value,fuels:$("fuel").value.split(","),litres:50,
   conso:6.5,corr:+$("corr").value||3,timev:0};}
