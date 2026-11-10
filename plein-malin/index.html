@@ -148,6 +148,7 @@ tr.top td{font-weight:600}
 
   <section class="panel">
     <h2>Toutes les stations du trajet</h2>
+    <p class="foot">Les 20 stations les plus avantageuses, dans l’ordre du trajet, du départ vers l’arrivée.</p>
     <div class="tbl"><table id="tbl"></table></div>
   </section>
 
@@ -309,9 +310,9 @@ function render(R,o){
     </article>`;}).join("");
   drawChart(R,top);
   const rk=new Map(top.map((s,i)=>[s.id,i+1]));
-  $("tbl").innerHTML=`<thead><tr><th>#</th><th>Station</th><th class="num">€/L</th><th class="num">km</th><th class="num">Détour</th><th class="num">Le plein</th><th class="num">vs habituel</th></tr></thead><tbody>`+
-    R.ranked.map(s=>{const sv=refCost-s.total;return`<tr class="${rk.has(s.id)?"top":""}"><td>${rk.get(s.id)||""}</td><td>${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(s.name)}${s.motorway?" · A":""}</td>
-      <td class="num">${s.est?"~":""}${s.eur.toFixed(3)}</td><td class="num">${s.along.toFixed(0)}</td><td class="num">+${s.detKm.toFixed(1)} km</td>
+  $("tbl").innerHTML=`<thead><tr><th class="num">km</th><th>Station</th><th class="num">€/L</th><th>#</th><th class="num">Détour</th><th class="num">Le plein</th><th class="num">vs habituel</th></tr></thead><tbody>`+
+    R.cands.slice().sort((a,b)=>a.total-b.total).slice(0,20).sort((a,b)=>a.along-b.along).map(s=>{const sv=refCost-s.total;return`<tr class="${rk.has(s.id)?"top":""}"><td class="num">${s.along.toFixed(0)}</td><td>${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(s.name)}${s.motorway?" · A":""}</td>
+      <td class="num">${s.est?"~":""}${s.eur.toFixed(3)}</td><td>${rk.has(s.id)?`<span class="rank">${rk.get(s.id)}</span>`:""}</td><td class="num">+${s.detKm.toFixed(1)} km${s.exact?"":" ~"}</td>
       <td class="num">${eur(s.total)}</td><td class="num save ${sv>=0?"pos":"neg"}">${sv>=0?"+":"−"}${eur(Math.abs(sv))}</td></tr>`;}).join("")+"</tbody>";
 }
 function drawChart(R,top){
