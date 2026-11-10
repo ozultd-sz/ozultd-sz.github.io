@@ -88,8 +88,6 @@ button[disabled]{opacity:.6;cursor:progress}
 
 
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px;min-width:0}
-.chart{overflow-x:auto}
-.chart svg{display:block;width:100%;min-width:560px;height:auto}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
 .tbl{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:.86rem;font-variant-numeric:tabular-nums}
@@ -97,6 +95,9 @@ th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-
 th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 td.num,th.num{text-align:right}
 tr.top td{font-weight:600}
+td.st{white-space:normal;min-width:220px}
+td.st .br{font-weight:600;display:block}
+td.st .ad{color:var(--muted);font-size:.8rem;font-weight:400;display:block}
 .foot{font-size:.8rem;color:var(--muted)}
 @media (prefers-reduced-motion:no-preference){.pick{transition:transform .15s}.pick:hover{transform:translateY(-2px)}}
 </style>
@@ -141,18 +142,12 @@ tr.top td{font-weight:600}
   <section class="picks" id="picks" aria-label="Stations recommandées"></section>
 
   <section class="panel">
-    <h2>Sur le trajet</h2>
-    <div class="legend"><span>Chaque point est une station : de gauche à droite, les km depuis le départ ; plus c’est haut, plus c’est cher. Les pastilles numérotées sont les stations recommandées.</span></div>
-    <div class="chart" id="chart"></div>
-  </section>
-
-  <section class="panel">
     <h2>Toutes les stations du trajet</h2>
-    <p class="foot">Les 20 stations au meilleur prix, dans l’ordre où vous passez devant, du départ vers l’arrivée.</p>
+    <p class="foot" id="tblfoot"></p>
     <div class="tbl"><table id="tbl"></table></div>
   </section>
 
-  <p class="foot">France : données officielles Prix des carburants (mises à jour toutes les 10 min environ). Suisse : pas de données de prix publiques officielles, les stations viennent d’OpenStreetMap et les prix marqués « estimé » sont des moyennes nationales. Calcul basé sur un plein de 50 L et une consommation de 6,5 L/100 km. Le bouton Google Maps ouvre le trajet complet depuis votre position, avec arrêt à la station. Les stations sont cherchées sur l’itinéraire principal et ses variantes. Itinéraire par OSRM, adresses par Nominatim, conversion CHF→EUR au taux BCE.</p>
+  <p class="foot">France : données officielles Prix des carburants (mises à jour toutes les 10 min environ). Suisse : pas de données de prix publiques officielles, les stations viennent d’OpenStreetMap et les prix marqués « estimé » sont des moyennes nationales. Calcul basé sur un plein de 50 L et une consommation de 6,5 L/100 km. Le bouton Google Maps ouvre le trajet complet depuis votre position, avec arrêt à la station. Les stations sont cherchées sur l’itinéraire principal et ses variantes. Marques des stations françaises d’après OpenStreetMap (si inconnue : « Station » + ville). Itinéraire par OSRM, adresses par Nominatim, conversion CHF→EUR au taux BCE.</p>
 </div>
 
 <script>
@@ -219,7 +214,7 @@ async function loadFR(bb,fuels){
     fuels.forEach((f,i)=>{let p=r[pre[i]+"_prix"];if(!p)return;const dt=r[pre[i]+"_maj"]?new Date(r[pre[i]+"_maj"]):null;
       if(dt&&dt.getTime()<cut)return;p=+p;if(p>5)p/=1000;if(!best||p<best.p)best={p,f,dt};});
     if(!best)continue;const city=title(r.ville||"");
-    out.push({id:"FR-"+r.id,country:"FR",name:"Station "+city,address:`${title(r.adresse||"")}, ${r.cp||""} ${city}`,
+    out.push({id:"FR-"+r.id,country:"FR",brand:"",name:"Station "+city,address:`${title(r.adresse||"")}, ${r.cp||""} ${city}`,
       lat:+g.lat,lon:+g.lon,native:best.p,cur:"EUR",fuel:best.f,updated:best.dt?best.dt.toISOString():"",
       motorway:r.pop==="A",h24:/^(oui|true|1)$/i.test(String(r.horaires_automate_24_24||"")),est:false});}
   return out;}
@@ -232,7 +227,7 @@ async function loadCH(bb,fuels){
       if(CH_DEFAULT[f]!=null&&(!best||CH_DEFAULT[f]<best.p))best={p:CH_DEFAULT[f],f};}
     if(!best)continue;const name=t.name||t.brand||"Tankstelle";
     const addr=[[t["addr:street"],t["addr:housenumber"]].filter(Boolean).join(" "),[t["addr:postcode"],t["addr:city"]].filter(Boolean).join(" ")].filter(Boolean).join(", ");
-    out.push({id:`CH-${el.type}/${el.id}`,country:"CH",name,address:addr||"Suisse",lat,lon,native:best.p,cur:"CHF",fuel:best.f,
+    out.push({id:`CH-${el.type}/${el.id}`,country:"CH",brand:t.brand||t.operator||"",name,address:addr||"Suisse",lat,lon,native:best.p,cur:"CHF",fuel:best.f,
       updated:"",motorway:/autobahn|raststätte/i.test(name),h24:t.opening_hours==="24/7",est:true});}
   return out;}
 async function fx(){try{return(await getJSON(FX)).rates.EUR;}catch(e){return 1.07;}}
@@ -261,7 +256,23 @@ async function runLive(o){
   for(let i=0;i<Math.min(12,cands.length);i++){const s=cands[i];say(`Calcul des détours… ${i+1}/${Math.min(12,cands.length)}`);
     try{const v=await osrm([A,[s.lat,s.lon],B],false);s.detKm=Math.max(0,v.km-base.km);s.detMin=Math.max(0,v.min-base.min);s.exact=true;s.total=cost(s,o);}catch(e){}
     await new Promise(r=>setTimeout(r,250));}
-  return{A,B,base,route,cands,rate,...finish(cands,o),live:true,nAlts:alts.length};}
+  const R={A,B,base,route,cands,rate,...finish(cands,o),live:true,nAlts:alts.length};
+  R.list=pickList(R);say("Recherche des marques…");await addBrands(R.list.concat(R.ranked.slice(0,3)));return R;}
+
+// ───────── liste : nombre selon la distance, ordre du départ vers l’arrivée ─────────
+function listSize(km){return km<=50?10:km<=100?15:km<=400?20:Math.min(50,Math.max(30,Math.round(km/20)));}
+function pickList(R){const n=listSize(R.base.km),keep=new Map();R.ranked.slice(0,3).forEach(s=>keep.set(s.id,s));
+  for(const s of R.cands.slice().sort((a,b)=>a.eur-b.eur)){if(keep.size>=n)break;keep.set(s.id,s);}
+  return[...keep.values()].sort((a,b)=>a.along-b.along);}
+async function addBrands(list){const fr=list.filter(s=>s.country==="FR"&&!s.brand);if(!fr.length)return;
+  const q=`[out:json][timeout:25];(${fr.map(s=>`nwr(around:200,${s.lat.toFixed(5)},${s.lon.toFixed(5)})["amenity"="fuel"];`).join("")});out center tags;`;
+  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),20000);
+  try{const d=await getJSON(OVERPASS,{method:"POST",body:new URLSearchParams({data:q}),signal:ctl.signal});
+    const els=(d.elements||[]).map(e=>({t:e.tags||{},lat:e.lat??e.center?.lat,lon:e.lon??e.center?.lon})).filter(e=>e.lat!=null);
+    for(const s of fr){let best=null,bd=.2;for(const e of els){const dd=hav(s.lat,s.lon,e.lat,e.lon);if(dd<bd){bd=dd;best=e;}}
+      if(best)s.brand=best.t.brand||best.t.operator||best.t.name||"";}}
+  catch(e){}finally{clearTimeout(tm);}}
+const label=s=>s.brand||s.name;
 
 // ───────── example trip (shown when outside servers are unreachable) ─────────
 function example(o){
@@ -298,7 +309,7 @@ function render(R,o){
   const top=R.ranked.slice(0,3);
   $("picks").innerHTML=top.map((s,i)=>{const sv=refCost-s.total;
     return`<article class="pick${i?"":" first"}">
-      <div class="pick-top"><div><p class="name">${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(s.name)}</p><p class="addr">${esc(s.address)}</p></div><span class="rank">${i+1}</span></div>
+      <div class="pick-top"><div><p class="name">${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(label(s))}</p><p class="addr">${esc(s.address)}</p></div><span class="rank">${i+1}</span></div>
       <div class="totem"><span class="p">${s.est?"~":""}${s.eur.toFixed(3)}</span><span class="u">€/L ${FUELS[s.fuel][2]}</span></div>
       <div class="chips">${s.motorway?'<span class="chip a">Autoroute</span>':""}${s.h24?'<span class="chip">Automate 24/24</span>':""}${s.nRoutes>1?(s.onAll?'<span class="chip ok">Sur tous les itinéraires</span>':(s.onMain?'<span class="chip">Itinéraire principal</span>':'<span class="chip">Itinéraire bis</span>')):""}${s.est?'<span class="chip est">Prix estimé</span>':""}${s.cur==="CHF"?`<span class="chip">${s.native.toFixed(2)} CHF/L</span>`:""}</div>
       <dl class="facts"><dt>Position</dt><dd>km ${s.along.toFixed(0)} sur ${R.base.km.toFixed(0)}</dd>
@@ -308,34 +319,13 @@ function render(R,o){
       <div class="links"><a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${R.B[0]},${R.B[1]}&waypoints=${s.lat},${s.lon}&travelmode=driving">Y aller avec Google Maps ↗</a>
         <div class="minor">Trajet complet jusqu’à ${esc(String(R.B[2]).split(",")[0])}, avec arrêt à la station.</div></div>
     </article>`;}).join("");
-  drawChart(R,top);
-  const rk=new Map(top.map((s,i)=>[s.id,i+1]));
-  $("tbl").innerHTML=`<thead><tr><th class="num">km</th><th>Station</th><th class="num">€/L</th><th>#</th><th class="num">Détour</th><th class="num">Le plein</th><th class="num">Économie réalisée<br>vs autres stations</th></tr></thead><tbody>`+
-    R.cands.slice().sort((a,b)=>a.eur-b.eur).slice(0,20).sort((a,b)=>a.along-b.along).map(s=>{const sv=refCost-s.total;return`<tr class="${rk.has(s.id)?"top":""}"><td class="num">${s.along.toFixed(0)}</td><td>${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(s.name)}${s.motorway?" · A":""}</td>
+  const rk=new Map(top.map((s,i)=>[s.id,i+1])),list=R.list||pickList(R);
+  $("tblfoot").textContent=`${list.length} stations (trajet de ${R.base.km.toFixed(0)} km), classées dans l’ordre où vous passez devant, du départ vers l’arrivée. Les numéros 1 à 3 sont les stations recommandées.`;
+  $("tbl").innerHTML=`<thead><tr><th class="num">km</th><th>Marque et adresse</th><th class="num">€/L</th><th>#</th><th class="num">Détour</th><th class="num">Le plein</th><th class="num">Économie réalisée<br>vs autres stations</th></tr></thead><tbody>`+
+    list.map(s=>{const sv=refCost-s.total;return`<tr class="${rk.has(s.id)?"top":""}"><td class="num">${s.along.toFixed(0)}</td><td class="st"><span class="br">${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(label(s))}${s.motorway?" · Autoroute":""}</span><span class="ad">${esc(s.address)}</span></td>
       <td class="num">${s.est?"~":""}${s.eur.toFixed(3)}</td><td>${rk.has(s.id)?`<span class="rank">${rk.get(s.id)}</span>`:""}</td><td class="num">+${s.detKm.toFixed(1)} km${s.exact?"":" ~"}</td>
       <td class="num">${eur(s.total)}</td><td class="num save ${sv>=0?"pos":"neg"}">${sv>=0?"+":"−"}${eur(Math.abs(sv))}</td></tr>`;}).join("")+"</tbody>";
 }
-function drawChart(R,top){
-  const W=760,H=260,ml=54,mr=18,mt=18,mb=38,iw=W-ml-mr,ih=H-mt-mb,L=R.route.length;
-  const ps=R.cands.map(s=>s.eur);let lo=Math.min(...ps),hi=Math.max(...ps);const pad=Math.max(.02,(hi-lo)*.15);lo-=pad;hi+=pad;
-  const x=k=>ml+k/L*iw,y=p=>mt+(1-(p-lo)/(hi-lo))*ih;
-  const step=[.02,.05,.1,.2].find(s=>(hi-lo)/s<=6)||.5;let yt="";
-  for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step)yt+=`<line x1="${ml}" x2="${W-mr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${ml-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${v.toFixed(2)}</text>`;
-  const kstep=[5,10,20,50,100].find(s=>L/s<=8)||200;let xt="";
-  for(let k=0;k<=L+.01;k+=kstep)xt+=`<text x="${x(k)}" y="${H-mb+18}" text-anchor="middle" font-size="11" fill="var(--muted)">${k}</text>`;
-  const rk=new Map(top.map((s,i)=>[s.id,i+1]));
-  const dots=R.cands.slice().sort((a,b)=>(rk.has(a.id)?1:0)-(rk.has(b.id)?1:0)).map(s=>{const cx=x(s.along),cy=y(s.eur),r=rk.get(s.id);
-    const fill=s.country==="CH"?"var(--surface)":"var(--fg)";
-    return r?`<circle cx="${cx}" cy="${cy}" r="11" fill="var(--accent)"/><text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent-ink)">${r}</text>`
-      :`<circle cx="${cx}" cy="${cy}" r="4.5" fill="${fill}" stroke="var(--fg)" stroke-width="1.2" opacity=".75"><title>${esc(s.name)} ${s.eur.toFixed(3)} €/L</title></circle>`;}).join("");
-  const ref=`<line x1="${ml}" x2="${W-mr}" y1="${y(R.ref.onRoute)}" y2="${y(R.ref.onRoute)}" stroke="var(--warn)" stroke-dasharray="5 4"/><text x="${W-mr}" y="${y(R.ref.onRoute)-6}" text-anchor="end" font-size="11" fill="var(--warn)">prix habituel</text>`;
-  $("chart").innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Prix des stations le long du trajet">
-    ${yt}${ref}<line x1="${ml}" x2="${W-mr}" y1="${H-mb}" y2="${H-mb}" stroke="var(--muted)"/>${xt}
-    <text x="${ml+iw/2}" y="${H-4}" text-anchor="middle" font-size="11" fill="var(--muted)">km depuis ${esc(String(R.A[2]).split(",")[0])} → ${esc(String(R.B[2]).split(",")[0])}</text>
-    <text x="14" y="${mt+ih/2}" transform="rotate(-90 14 ${mt+ih/2})" text-anchor="middle" font-size="11" fill="var(--muted)">€ par litre</text>${dots}</svg>
-    <div class="legend"><span>● France</span><span>○ Suisse (prix estimé)</span></div>`;
-}
-
 // ───────── wiring ─────────
 function opts(){return{from:$("from").value,to:$("to").value,fuels:$("fuel").value.split(","),litres:50,
   conso:6.5,corr:+$("corr").value||3,timev:0};}
