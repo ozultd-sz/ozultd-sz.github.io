@@ -97,6 +97,8 @@ td.num,th.num{text-align:right}
 tr.top td{font-weight:600}
 td.st{white-space:normal;min-width:220px}
 td.st .br{font-weight:600;display:block}
+.maplink{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.maplink:hover{text-decoration-thickness:2px}
 td.st .ad{color:var(--muted);font-size:.8rem;font-weight:400;display:block}
 .foot{font-size:.8rem;color:var(--muted)}
 @media (prefers-reduced-motion:no-preference){.pick{transition:transform .15s}.pick:hover{transform:translateY(-2px)}}
@@ -147,7 +149,7 @@ td.st .ad{color:var(--muted);font-size:.8rem;font-weight:400;display:block}
     <div class="tbl"><table id="tbl"></table></div>
   </section>
 
-  <p class="foot">France : données officielles Prix des carburants (mises à jour toutes les 10 min environ). Suisse : pas de données de prix publiques officielles, les stations viennent d’OpenStreetMap et les prix marqués « estimé » sont des moyennes nationales. Calcul basé sur un plein de 50 L et une consommation de 6,5 L/100 km. Le bouton Google Maps ouvre le trajet complet depuis votre position, avec arrêt à la station. Les stations sont cherchées sur l’itinéraire principal et ses variantes. Marques des stations françaises d’après OpenStreetMap (si inconnue : « Station » + ville). Itinéraire par OSRM, adresses par Nominatim, conversion CHF→EUR au taux BCE.</p>
+  <p class="foot">France : données officielles Prix des carburants (mises à jour toutes les 10 min environ). Suisse : pas de données de prix publiques officielles, les stations viennent d’OpenStreetMap et les prix marqués « estimé » sont des moyennes nationales. Calcul basé sur un plein de 50 L et une consommation de 6,5 L/100 km. Le bouton Google Maps ouvre le trajet complet depuis votre position, avec arrêt à la station. Les stations sont cherchées sur l’itinéraire principal et ses variantes. Cliquez sur l’adresse d’une station pour l’ouvrir dans Google Maps. Marques des stations françaises d’après OpenStreetMap (si inconnue : « Station » + ville). Itinéraire par OSRM, adresses par Nominatim, conversion CHF→EUR au taux BCE.</p>
 </div>
 
 <script>
@@ -273,6 +275,8 @@ async function addBrands(list){const fr=list.filter(s=>s.country==="FR"&&!s.bran
       if(best)s.brand=best.t.brand||best.t.operator||best.t.name||"";}}
   catch(e){}finally{clearTimeout(tm);}}
 const label=s=>s.brand||s.name;
+const mapUrl=s=>`https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}`;
+const mapLink=(s,txt)=>`<a class="maplink" target="_blank" rel="noopener" href="${mapUrl(s)}" title="Voir la station sur Google Maps">📍 ${esc(txt)}</a>`;
 
 // ───────── example trip (shown when outside servers are unreachable) ─────────
 function example(o){
@@ -309,7 +313,7 @@ function render(R,o){
   const top=R.ranked.slice(0,3);
   $("picks").innerHTML=top.map((s,i)=>{const sv=refCost-s.total;
     return`<article class="pick${i?"":" first"}">
-      <div class="pick-top"><div><p class="name">${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(label(s))}</p><p class="addr">${esc(s.address)}</p></div><span class="rank">${i+1}</span></div>
+      <div class="pick-top"><div><p class="name">${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(label(s))}</p><p class="addr">${mapLink(s,s.address)}</p></div><span class="rank">${i+1}</span></div>
       <div class="totem"><span class="p">${s.est?"~":""}${s.eur.toFixed(3)}</span><span class="u">€/L ${FUELS[s.fuel][2]}</span></div>
       <div class="chips">${s.motorway?'<span class="chip a">Autoroute</span>':""}${s.h24?'<span class="chip">Automate 24/24</span>':""}${s.nRoutes>1?(s.onAll?'<span class="chip ok">Sur tous les itinéraires</span>':(s.onMain?'<span class="chip">Itinéraire principal</span>':'<span class="chip">Itinéraire bis</span>')):""}${s.est?'<span class="chip est">Prix estimé</span>':""}${s.cur==="CHF"?`<span class="chip">${s.native.toFixed(2)} CHF/L</span>`:""}</div>
       <dl class="facts"><dt>Position</dt><dd>km ${s.along.toFixed(0)} sur ${R.base.km.toFixed(0)}</dd>
@@ -322,7 +326,7 @@ function render(R,o){
   const rk=new Map(top.map((s,i)=>[s.id,i+1])),list=R.list||pickList(R);
   $("tblfoot").textContent=`${list.length} stations (trajet de ${R.base.km.toFixed(0)} km), classées dans l’ordre où vous passez devant, du départ vers l’arrivée. Les numéros 1 à 3 sont les stations recommandées.`;
   $("tbl").innerHTML=`<thead><tr><th class="num">km</th><th>Marque et adresse</th><th class="num">€/L</th><th>#</th><th class="num">Détour</th><th class="num">Le plein</th><th class="num">Économie réalisée<br>vs autres stations</th></tr></thead><tbody>`+
-    list.map(s=>{const sv=refCost-s.total;return`<tr class="${rk.has(s.id)?"top":""}"><td class="num">${s.along.toFixed(0)}</td><td class="st"><span class="br">${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(label(s))}${s.motorway?" · Autoroute":""}</span><span class="ad">${esc(s.address)}</span></td>
+    list.map(s=>{const sv=refCost-s.total;return`<tr class="${rk.has(s.id)?"top":""}"><td class="num">${s.along.toFixed(0)}</td><td class="st"><span class="br">${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(label(s))}${s.motorway?" · Autoroute":""}</span><span class="ad">${mapLink(s,s.address)}</span></td>
       <td class="num">${s.est?"~":""}${s.eur.toFixed(3)}</td><td>${rk.has(s.id)?`<span class="rank">${rk.get(s.id)}</span>`:""}</td><td class="num">+${s.detKm.toFixed(1)} km${s.exact?"":" ~"}</td>
       <td class="num">${eur(s.total)}</td><td class="num save ${sv>=0?"pos":"neg"}">${sv>=0?"+":"−"}${eur(Math.abs(sv))}</td></tr>`;}).join("")+"</tbody>";
 }
