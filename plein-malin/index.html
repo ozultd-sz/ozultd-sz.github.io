@@ -32,6 +32,8 @@ h1{font-size:2.2rem;line-height:1.05}
 h2{font-size:1.35rem;text-transform:uppercase;letter-spacing:.06em}
 .sub{color:var(--muted);margin:4px 0 0;max-width:62ch}
 header{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.lang{margin-left:auto;background:transparent;color:var(--accent);border:1px solid var(--accent);padding:6px 12px;font-size:.85rem;letter-spacing:.04em}
+.lang:hover{background:var(--accent);color:var(--accent-ink)}
 .sign{background:var(--accent);color:var(--accent-ink);font-family:var(--display);font-weight:700;
   font-size:1.1rem;padding:6px 10px;border-radius:6px;letter-spacing:.04em}
 
@@ -110,30 +112,31 @@ td.st .ad{color:var(--muted);font-size:.8rem;font-weight:400;display:block}
     <span class="sign">FR · CH</span>
     <div>
       <h1>Plein Malin</h1>
-      <p class="sub">Où faire le plein entre deux villes en France ou en Suisse, en tenant compte du prix à la pompe et du carburant consommé pour le détour.</p>
+      <p class="sub" data-i18n="sub"></p>
     </div>
+    <button type="button" id="lang" class="lang"></button>
   </header>
 
   <form id="f" autocomplete="off">
     <div class="row trip">
-      <label for="from">Départ<input id="from" value="Annecy" required></label>
-      <label for="to">Arrivée<input id="to" value="Genève" required></label>
+      <label for="from"><span data-i18n="from"></span><input id="from" value="Annecy" required></label>
+      <label for="to"><span data-i18n="to"></span><input id="to" value="Genève" required></label>
     </div>
     <div class="row">
-      <label for="fuel">Carburant
+      <label for="fuel"><span data-i18n="fuel"></span>
         <select id="fuel">
-          <option value="diesel">Gazole</option>
-          <option value="sp95,e10">SP95 ou E10</option>
+          <option value="diesel" data-i18n="diesel"></option>
+          <option value="sp95,e10" data-i18n="sp95e10"></option>
           <option value="sp95">SP95</option>
           <option value="e10">SP95-E10</option>
           <option value="sp98">SP98</option>
           <option value="e85">E85</option>
           <option value="gpl">GPL</option>
         </select></label>
-      <label for="corr">Écart max. du trajet (km)<input id="corr" type="number" min="0.5" max="15" step="0.5" value="3"></label>
+      <label for="corr"><span data-i18n="corr"></span><input id="corr" type="number" min="0.5" max="15" step="0.5" value="3"></label>
     </div>
     <div class="actions">
-      <button id="go" type="submit">Trouver les meilleures stations</button>
+      <button id="go" type="submit" data-i18n="go"></button>
       <span class="status" id="status" role="status"></span>
     </div>
   </form>
@@ -141,20 +144,19 @@ td.st .ad{color:var(--muted);font-size:.8rem;font-weight:400;display:block}
   <div class="notice" id="notice" hidden></div>
 
   <div class="summary" id="summary"></div>
-  <section class="picks" id="picks" aria-label="Stations recommandées"></section>
+  <section class="picks" id="picks" data-i18n-aria="picksAria"></section>
 
   <section class="panel">
-    <h2>Toutes les stations du trajet</h2>
+    <h2 data-i18n="allTitle"></h2>
     <p class="foot" id="tblfoot"></p>
     <div class="tbl"><table id="tbl"></table></div>
   </section>
 
-  <p class="foot">France : données officielles Prix des carburants (mises à jour toutes les 10 min environ). Suisse : pas de données de prix publiques officielles, les stations viennent d’OpenStreetMap et les prix marqués « estimé » sont des moyennes nationales. Calcul basé sur un plein de 50 L et une consommation de 6,5 L/100 km. Le bouton Google Maps ouvre le trajet complet depuis votre position, avec arrêt à la station. Les stations sont cherchées sur l’itinéraire principal et ses variantes. Cliquez sur l’adresse d’une station pour l’ouvrir dans Google Maps. Marques des stations françaises d’après OpenStreetMap (si inconnue : « Station » + ville). Itinéraire par OSRM, adresses par Nominatim, conversion CHF→EUR au taux BCE.</p>
+  <p class="foot" data-i18n="foot"></p>
 </div>
 
 <script>
 "use strict";
-document.documentElement.lang="fr";
 // ───────── config ─────────
 const OSRM="https://router.project-osrm.org", NOMI="https://nominatim.openstreetmap.org/search",
   OVERPASS="https://overpass-api.de/api/interpreter",
@@ -165,6 +167,54 @@ const FUELS={diesel:["gazole","fuel:diesel","Gazole"],sp95:["sp95","fuel:octane_
 const CH_DEFAULT={diesel:2.10,sp95:1.92,sp98:2.02,e85:1.60,gpl:1.30};
 const CH_BBOX=[45.80,5.95,47.82,10.50], ROAD=1.35, MAX_AGE_D=7, R=6371.0088;
 const $=id=>document.getElementById(id);
+
+// ───────── langues / languages ─────────
+const I18N={
+fr:{locale:"fr-FR",langBtn:"EN",langTitle:"Switch to English",
+  sub:"Où faire le plein entre deux villes en France ou en Suisse, en tenant compte du prix à la pompe et du carburant consommé pour le détour.",
+  from:"Départ",to:"Arrivée",fuel:"Carburant",diesel:"Gazole",sp95e10:"SP95 ou E10",corr:"Écart max. du trajet (km)",
+  go:"Trouver les meilleures stations",picksAria:"Stations recommandées",allTitle:"Toutes les stations du trajet",
+  foot:"France : données officielles Prix des carburants (mises à jour toutes les 10 min environ). Suisse : pas de données de prix publiques officielles, les stations viennent d’OpenStreetMap et les prix marqués « estimé » sont des moyennes nationales. Calcul basé sur un plein de 50 L et une consommation de 6,5 L/100 km. Le bouton Google Maps ouvre le trajet complet depuis votre position, avec arrêt à la station. Les stations sont cherchées sur l’itinéraire principal et ses variantes. Cliquez sur l’adresse d’une station pour l’ouvrir dans Google Maps. Marques des stations françaises d’après OpenStreetMap (si inconnue : « Station » + ville). Itinéraire par OSRM, adresses par Nominatim, conversion CHF→EUR au taux BCE.",
+  errAddr:q=>`Adresse « ${q} » introuvable en France ou en Suisse.`,errRoute:c=>"Échec du calcul d’itinéraire : "+c,
+  errNone:c=>`Aucune station avec un prix à jour à moins de ${c} km de ce trajet. Augmentez l’écart max. ou choisissez un autre carburant.`,
+  sAddr:"Recherche des adresses…",sRoute:"Calcul de l’itinéraire…",sPrices:"Chargement des prix…",sDet:(i,n)=>`Calcul des détours… ${i}/${n}`,
+  sBrands:"Recherche des marques…",sDone:tm=>`Mis à jour à ${tm} · données en direct`,
+  sumTrip:"Trajet",sumNear:(n,c)=>`<b>${n}</b> stations à moins de ${c} km`,sumAlts:n=>`<b>${n}</b> itinéraires analysés`,
+  sumUsual:"Prix habituel sur le trajet",sumMax:"Le plus cher",
+  chipMw:"Autoroute",chip24:"Automate 24/24",chipAll:"Sur tous les itinéraires",chipMain:"Itinéraire principal",chipBis:"Itinéraire bis",chipEst:"Prix estimé",
+  fPos:"Position",fPosV:(a,b)=>`km ${a} sur ${b}`,fDet:"Détour",estd:" (estimé)",fFill:"Le plein",fSave:"Économie réalisée",over:"surcoût de ",vsOthers:" vs autres stations",
+  goMaps:"Y aller avec Google Maps ↗",goMinor:d=>`Trajet complet jusqu’à ${d}, avec arrêt à la station.`,mapTitle:"Voir la station sur Google Maps",
+  tblFoot:(n,km)=>`${n} stations (trajet de ${km} km), classées dans l’ordre où vous passez devant, du départ vers l’arrivée. Les numéros 1 à 3 sont les stations recommandées.`,
+  thSt:"Marque et adresse",thDet:"Détour",thFill:"Le plein",thSave:"Économie réalisée<br>vs autres stations",
+  exHead:"Trajet d’exemple, pas les prix du jour.",
+  exBody:"Les chiffres ci-dessous illustrent un trajet Annecy → Genève pour montrer le fonctionnement du classement. Cliquez sur « Trouver les meilleures stations » pour lancer une recherche avec les prix du jour.",
+  whyIntro:"Voici un exemple pour illustrer.",whyNet:"Cette page ne peut pas joindre les serveurs d’itinéraire et de prix depuis ici.",whyLive:"Les données en direct ne sont pas accessibles ici."},
+en:{locale:"en-GB",langBtn:"FR",langTitle:"Passer en français",
+  sub:"Where to fill up between two towns in France or Switzerland, weighing the pump price against the fuel burned on the detour.",
+  from:"From",to:"To",fuel:"Fuel",diesel:"Diesel",sp95e10:"SP95 or E10",corr:"Max. distance from route (km)",
+  go:"Find the best stations",picksAria:"Recommended stations",allTitle:"All stations on the route",
+  foot:"France: official Prix des carburants data (updated about every 10 min). Switzerland: no official public price data; stations come from OpenStreetMap and prices marked “estimated” are national averages. Based on a 50 L fill-up and 6.5 L/100 km. The Google Maps button opens the full trip from your location, with a stop at the station. Stations are searched along the main route and its alternatives. Click a station’s address to open it in Google Maps. French station brands from OpenStreetMap (if unknown: “Station” + town). Routing by OSRM, addresses by Nominatim, CHF→EUR at the ECB rate.",
+  errAddr:q=>`Address “${q}” not found in France or Switzerland.`,errRoute:c=>"Route calculation failed: "+c,
+  errNone:c=>`No station with an up-to-date price within ${c} km of this route. Increase the max. distance or pick another fuel.`,
+  sAddr:"Looking up addresses…",sRoute:"Calculating the route…",sPrices:"Loading prices…",sDet:(i,n)=>`Calculating detours… ${i}/${n}`,
+  sBrands:"Looking up brands…",sDone:tm=>`Updated at ${tm} · live data`,
+  sumTrip:"Trip",sumNear:(n,c)=>`<b>${n}</b> stations within ${c} km`,sumAlts:n=>`<b>${n}</b> routes analysed`,
+  sumUsual:"Typical price on the route",sumMax:"Most expensive",
+  chipMw:"Motorway",chip24:"24/7 pay-at-pump",chipAll:"On every route",chipMain:"Main route",chipBis:"Alternative route",chipEst:"Estimated price",
+  fPos:"Position",fPosV:(a,b)=>`km ${a} of ${b}`,fDet:"Detour",estd:" (estimated)",fFill:"Full tank",fSave:"Saving",over:"extra cost of ",vsOthers:" vs other stations",
+  goMaps:"Go with Google Maps ↗",goMinor:d=>`Full trip to ${d}, with a stop at the station.`,mapTitle:"Show the station in Google Maps",
+  tblFoot:(n,km)=>`${n} stations (${km} km trip), in the order you pass them, from departure to arrival. Numbers 1 to 3 are the recommended stations.`,
+  thSt:"Brand and address",thDet:"Detour",thFill:"Full tank",thSave:"Saving<br>vs other stations",
+  exHead:"Example trip, not today’s prices.",
+  exBody:"The figures below show an Annecy → Geneva trip to illustrate how the ranking works. Click “Find the best stations” to search with today’s prices.",
+  whyIntro:"Here is an example.",whyNet:"This page can’t reach the routing and price servers from here.",whyLive:"Live data isn’t reachable here."}};
+let LANG="fr";try{const v=localStorage.getItem("pm-lang");if(v==="en"||v==="fr")LANG=v;}catch(e){}
+const t=(k,...a)=>{const v=I18N[LANG][k];return typeof v==="function"?v(...a):v;};
+const fuelName=f=>f==="diesel"?t("diesel"):FUELS[f][2];
+function applyLang(){document.documentElement.lang=LANG;
+  document.querySelectorAll("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
+  document.querySelectorAll("[data-i18n-aria]").forEach(el=>el.setAttribute("aria-label",t(el.dataset.i18nAria)));
+  $("lang").textContent=t("langBtn");$("lang").title=t("langTitle");$("lang").setAttribute("aria-label",t("langTitle"));}
 
 // ───────── geometry ─────────
 function hav(a,b,c,d){const p1=a*Math.PI/180,p2=c*Math.PI/180,dp=p2-p1,dl=(d-b)*Math.PI/180;
@@ -197,13 +247,13 @@ class RouteIndex{
 async function getJSON(url,opts={}){const r=await fetch(url,opts);if(!r.ok)throw new Error(r.status+" "+url.slice(0,60));return r.json();}
 async function geocode(q){
   const m=q.trim().match(/^(-?\d+(?:\.\d+)?)\s*[,;]\s*(-?\d+(?:\.\d+)?)$/);if(m)return[+m[1],+m[2],q];
-  const res=await getJSON(NOMI+"?"+new URLSearchParams({q,format:"json",limit:1,countrycodes:"fr,ch","accept-language":"fr"}));
-  if(!res.length)throw new Error(`Adresse « ${q} » introuvable en France ou en Suisse.`);
+  const res=await getJSON(NOMI+"?"+new URLSearchParams({q,format:"json",limit:1,countrycodes:"fr,ch","accept-language":LANG}));
+  if(!res.length)throw new Error(t("errAddr",q));
   return[+res[0].lat,+res[0].lon,res[0].display_name];}
 async function osrm(pts,full=true,alts=false){
   const c=pts.map(([la,lo])=>lo.toFixed(6)+","+la.toFixed(6)).join(";");
   const d=await getJSON(`${OSRM}/route/v1/driving/${c}?overview=${full?"full":"false"}&geometries=geojson${alts?"&alternatives=true":""}`);
-  if(d.code!=="Ok")throw new Error("Échec du calcul d’itinéraire : "+d.code);const conv=r=>({km:r.distance/1000,min:r.duration/60,coords:full?r.geometry.coordinates.map(([lo,la])=>[la,lo]):null});
+  if(d.code!=="Ok")throw new Error(t("errRoute",d.code));const conv=r=>({km:r.distance/1000,min:r.duration/60,coords:full?r.geometry.coordinates.map(([lo,la])=>[la,lo]):null});
   return alts?d.routes.map(conv):conv(d.routes[0]);}
 async function loadFR(bb,fuels){
   const pre=fuels.map(f=>FUELS[f][0]);const sel=["id","adresse","ville","cp","geom","pop","horaires_automate_24_24"];
@@ -248,18 +298,18 @@ function finish(cands,o){
   return{ranked,ref:{median:med(prices),onRoute:med(onr.length?onr:prices),max:prices[prices.length-1]}};}
 
 async function runLive(o){
-  say("Recherche des adresses…");const A=await geocode(o.from);await new Promise(r=>setTimeout(r,1000));const B=await geocode(o.to);
-  say("Calcul de l’itinéraire…");const alts=await osrm([A,B],true,true);const base=alts[0];const route=new RouteIndex(base.coords);const idx=alts.map((r,i)=>i?new RouteIndex(r.coords):route);
+  say(t("sAddr"));const A=await geocode(o.from);await new Promise(r=>setTimeout(r,1000));const B=await geocode(o.to);
+  say(t("sRoute"));const alts=await osrm([A,B],true,true);const base=alts[0];const route=new RouteIndex(base.coords);const idx=alts.map((r,i)=>i?new RouteIndex(r.coords):route);
   const bb=idx.map(r=>r.bbox(o.corr+1)).reduce((a,b)=>[Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[2],b[2]),Math.max(a[3],b[3])]);
-  say("Chargement des prix…");
+  say(t("sPrices"));
   const [fr,ch,rate]=await Promise.all([loadFR(bb,o.fuels).catch(()=>[]),loadCH(bb,o.fuels).catch(()=>[]),fx()]);
   const cands=screen(fr.concat(ch),idx,o,rate);
-  if(!cands.length)throw new Error("Aucune station avec un prix à jour à moins de "+o.corr+" km de ce trajet. Augmentez l’écart max. ou choisissez un autre carburant.");
-  for(let i=0;i<Math.min(12,cands.length);i++){const s=cands[i];say(`Calcul des détours… ${i+1}/${Math.min(12,cands.length)}`);
+  if(!cands.length)throw new Error(t("errNone",o.corr));
+  for(let i=0;i<Math.min(12,cands.length);i++){const s=cands[i];say(t("sDet",i+1,Math.min(12,cands.length)));
     try{const v=await osrm([A,[s.lat,s.lon],B],false);s.detKm=Math.max(0,v.km-base.km);s.detMin=Math.max(0,v.min-base.min);s.exact=true;s.total=cost(s,o);}catch(e){}
     await new Promise(r=>setTimeout(r,250));}
   const R={A,B,base,route,cands,rate,...finish(cands,o),live:true,nAlts:alts.length};
-  R.list=pickList(R);say("Recherche des marques…");await addBrands(R.list.concat(R.ranked.slice(0,3)));return R;}
+  R.list=pickList(R);say(t("sBrands"));await addBrands(R.list.concat(R.ranked.slice(0,3)));return R;}
 
 // ───────── liste : nombre selon la distance, ordre du départ vers l’arrivée ─────────
 function listSize(km){return km<=50?10:km<=100?15:km<=400?20:Math.min(50,Math.max(30,Math.round(km/20)));}
@@ -276,7 +326,7 @@ async function addBrands(list){const fr=list.filter(s=>s.country==="FR"&&!s.bran
   catch(e){}finally{clearTimeout(tm);}}
 const label=s=>s.brand||s.name;
 const mapUrl=s=>`https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}`;
-const mapLink=(s,txt)=>`<a class="maplink" target="_blank" rel="noopener" href="${mapUrl(s)}" title="Voir la station sur Google Maps">📍 ${esc(txt)}</a>`;
+const mapLink=(s,txt)=>`<a class="maplink" target="_blank" rel="noopener" href="${mapUrl(s)}" title="${esc(t("mapTitle"))}">📍 ${esc(txt)}</a>`;
 
 // ───────── example trip (shown when outside servers are unreachable) ─────────
 function example(o){
@@ -301,49 +351,55 @@ function example(o){
   return{A:[45.8992,6.1294,"Annecy"],B:[46.204,6.143,"Genève"],base,route,cands,rate,...finish(cands,o),live:false};}
 
 // ───────── render ─────────
-const eur=v=>v.toLocaleString("fr-FR",{style:"currency",currency:"EUR"});
+const eur=v=>v.toLocaleString(t("locale"),{style:"currency",currency:"EUR"});
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function say(t){$("status").textContent=t;}
 function render(R,o){
   const L=o.litres,refCost=L*R.ref.onRoute,h=Math.floor(R.base.min/60),m=Math.round(R.base.min%60);
-  $("summary").innerHTML=`<span>Trajet <b>${R.base.km.toFixed(0)} km</b> · <b>${h} h ${String(m).padStart(2,"0")}</b></span>
-    <span><b>${R.cands.length}</b> stations à moins de ${o.corr} km</span>${R.nAlts>1?`<span><b>${R.nAlts}</b> itinéraires analysés</span>`:""}
-    <span>Prix habituel sur le trajet <b>${R.ref.onRoute.toFixed(3)} €/L</b></span>
-    <span>Le plus cher <b>${R.ref.max.toFixed(3)} €/L</b></span>`;
+  $("summary").innerHTML=`<span>${t("sumTrip")} <b>${R.base.km.toFixed(0)} km</b> · <b>${h} h ${String(m).padStart(2,"0")}</b></span>
+    <span>${t("sumNear",R.cands.length,o.corr)}</span>${R.nAlts>1?`<span>${t("sumAlts",R.nAlts)}</span>`:""}
+    <span>${t("sumUsual")} <b>${R.ref.onRoute.toFixed(3)} €/L</b></span>
+    <span>${t("sumMax")} <b>${R.ref.max.toFixed(3)} €/L</b></span>`;
   const top=R.ranked.slice(0,3);
   $("picks").innerHTML=top.map((s,i)=>{const sv=refCost-s.total;
     return`<article class="pick${i?"":" first"}">
       <div class="pick-top"><div><p class="name">${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(label(s))}</p><p class="addr">${mapLink(s,s.address)}</p></div><span class="rank">${i+1}</span></div>
-      <div class="totem"><span class="p">${s.est?"~":""}${s.eur.toFixed(3)}</span><span class="u">€/L ${FUELS[s.fuel][2]}</span></div>
-      <div class="chips">${s.motorway?'<span class="chip a">Autoroute</span>':""}${s.h24?'<span class="chip">Automate 24/24</span>':""}${s.nRoutes>1?(s.onAll?'<span class="chip ok">Sur tous les itinéraires</span>':(s.onMain?'<span class="chip">Itinéraire principal</span>':'<span class="chip">Itinéraire bis</span>')):""}${s.est?'<span class="chip est">Prix estimé</span>':""}${s.cur==="CHF"?`<span class="chip">${s.native.toFixed(2)} CHF/L</span>`:""}</div>
-      <dl class="facts"><dt>Position</dt><dd>km ${s.along.toFixed(0)} sur ${R.base.km.toFixed(0)}</dd>
-        <dt>Détour</dt><dd>+${s.detKm.toFixed(1)} km · +${Math.round(s.detMin)} min${s.exact?"":" (estimé)"}</dd>
-        <dt>Le plein</dt><dd>${eur(s.total)}</dd>
-        <dt>Économie réalisée</dt><dd class="save ${sv>=0?"pos":"neg"}">${sv>=0?"":"surcoût de "}${eur(Math.abs(sv))}${sv>=0?" vs autres stations":""}</dd></dl>
-      <div class="links"><a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${R.B[0]},${R.B[1]}&waypoints=${s.lat},${s.lon}&travelmode=driving">Y aller avec Google Maps ↗</a>
-        <div class="minor">Trajet complet jusqu’à ${esc(String(R.B[2]).split(",")[0])}, avec arrêt à la station.</div></div>
+      <div class="totem"><span class="p">${s.est?"~":""}${s.eur.toFixed(3)}</span><span class="u">€/L ${fuelName(s.fuel)}</span></div>
+      <div class="chips">${s.motorway?`<span class="chip a">${t("chipMw")}</span>`:""}${s.h24?`<span class="chip">${t("chip24")}</span>`:""}${s.nRoutes>1?(s.onAll?`<span class="chip ok">${t("chipAll")}</span>`:(s.onMain?`<span class="chip">${t("chipMain")}</span>`:`<span class="chip">${t("chipBis")}</span>`)):""}${s.est?`<span class="chip est">${t("chipEst")}</span>`:""}${s.cur==="CHF"?`<span class="chip">${s.native.toFixed(2)} CHF/L</span>`:""}</div>
+      <dl class="facts"><dt>${t("fPos")}</dt><dd>${t("fPosV",s.along.toFixed(0),R.base.km.toFixed(0))}</dd>
+        <dt>${t("fDet")}</dt><dd>+${s.detKm.toFixed(1)} km · +${Math.round(s.detMin)} min${s.exact?"":t("estd")}</dd>
+        <dt>${t("fFill")}</dt><dd>${eur(s.total)}</dd>
+        <dt>${t("fSave")}</dt><dd class="save ${sv>=0?"pos":"neg"}">${sv>=0?"":t("over")}${eur(Math.abs(sv))}${sv>=0?t("vsOthers"):""}</dd></dl>
+      <div class="links"><a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${R.B[0]},${R.B[1]}&waypoints=${s.lat},${s.lon}&travelmode=driving">${t("goMaps")}</a>
+        <div class="minor">${t("goMinor",esc(String(R.B[2]).split(",")[0]))}</div></div>
     </article>`;}).join("");
   const rk=new Map(top.map((s,i)=>[s.id,i+1])),list=R.list||pickList(R);
-  $("tblfoot").textContent=`${list.length} stations (trajet de ${R.base.km.toFixed(0)} km), classées dans l’ordre où vous passez devant, du départ vers l’arrivée. Les numéros 1 à 3 sont les stations recommandées.`;
-  $("tbl").innerHTML=`<thead><tr><th class="num">km</th><th>Marque et adresse</th><th class="num">€/L</th><th>#</th><th class="num">Détour</th><th class="num">Le plein</th><th class="num">Économie réalisée<br>vs autres stations</th></tr></thead><tbody>`+
-    list.map(s=>{const sv=refCost-s.total;return`<tr class="${rk.has(s.id)?"top":""}"><td class="num">${s.along.toFixed(0)}</td><td class="st"><span class="br">${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(label(s))}${s.motorway?" · Autoroute":""}</span><span class="ad">${mapLink(s,s.address)}</span></td>
+  $("tblfoot").textContent=t("tblFoot",list.length,R.base.km.toFixed(0));
+  $("tbl").innerHTML=`<thead><tr><th class="num">km</th><th>${t("thSt")}</th><th class="num">€/L</th><th>#</th><th class="num">${t("thDet")}</th><th class="num">${t("thFill")}</th><th class="num">${t("thSave")}</th></tr></thead><tbody>`+
+    list.map(s=>{const sv=refCost-s.total;return`<tr class="${rk.has(s.id)?"top":""}"><td class="num">${s.along.toFixed(0)}</td><td class="st"><span class="br">${s.country==="FR"?"🇫🇷":"🇨🇭"} ${esc(label(s))}${s.motorway?" · "+t("chipMw"):""}</span><span class="ad">${mapLink(s,s.address)}</span></td>
       <td class="num">${s.est?"~":""}${s.eur.toFixed(3)}</td><td>${rk.has(s.id)?`<span class="rank">${rk.get(s.id)}</span>`:""}</td><td class="num">+${s.detKm.toFixed(1)} km${s.exact?"":" ~"}</td>
       <td class="num">${eur(s.total)}</td><td class="num save ${sv>=0?"pos":"neg"}">${sv>=0?"+":"−"}${eur(Math.abs(sv))}</td></tr>`;}).join("")+"</tbody>";
 }
 // ───────── wiring ─────────
 function opts(){return{from:$("from").value,to:$("to").value,fuels:$("fuel").value.split(","),litres:50,
   conso:6.5,corr:+$("corr").value||3,timev:0};}
+let last=null; // {kind:"example",why} or {kind:"live",R,o,at}
 function showExample(o,why){
-  const n=$("notice");n.hidden=false;
-  n.innerHTML=`<strong>Trajet d’exemple, pas les prix du jour.</strong> ${why} Les chiffres ci-dessous illustrent un trajet Annecy → Genève pour montrer le fonctionnement du classement. Cliquez sur « Trouver les meilleures stations » pour lancer une recherche avec les prix du jour.`;
+  const n=$("notice");n.hidden=false;last={kind:"example",why};
+  n.innerHTML=`<strong>${t("exHead")}</strong> ${t(why)} ${t("exBody")}`;
   render(example(o),o);}
+function doneMsg(at){return t("sDone",at.toLocaleTimeString(t("locale"),{hour:"2-digit",minute:"2-digit"}));}
 $("f").addEventListener("submit",async e=>{e.preventDefault();const o=opts();$("go").disabled=true;
-  try{const R=await runLive(o);$("notice").hidden=true;render(R,o);say(`Mis à jour à ${new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})} · données en direct`);}
-  catch(err){if(err instanceof TypeError){showExample(o,"Cette page ne peut pas joindre les serveurs d’itinéraire et de prix depuis ici.");say("");}
+  try{const R=await runLive(o);$("notice").hidden=true;const at=new Date();last={kind:"live",R,o,at};render(R,o);say(doneMsg(at));}
+  catch(err){if(err instanceof TypeError){showExample(o,"whyNet");say("");}
     else{say(err.message);}}
   finally{$("go").disabled=false;}});
-["fuel","corr"].forEach(id=>$(id).addEventListener("change",()=>{if(!$("notice").hidden)showExample(opts(),"Les données en direct ne sont pas accessibles ici.");}));
-showExample(opts(),"Voici un exemple pour illustrer.");
+["fuel","corr"].forEach(id=>$(id).addEventListener("change",()=>{if(!$("notice").hidden)showExample(opts(),"whyLive");}));
+$("lang").addEventListener("click",()=>{LANG=LANG==="fr"?"en":"fr";try{localStorage.setItem("pm-lang",LANG);}catch(e){}
+  applyLang();if(!last)return;
+  if(last.kind==="live"){render(last.R,last.o);say(doneMsg(last.at));}else{showExample(opts(),last.why);if(!$("go").disabled)say("");}});
+applyLang();
+showExample(opts(),"whyIntro");
 </script>
 
 </body></html>
