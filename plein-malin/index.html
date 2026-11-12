@@ -159,7 +159,7 @@ td.st .ad{color:var(--muted);font-size:.8rem;font-weight:400;display:block}
 "use strict";
 // ───────── config ─────────
 const OSRM="https://router.project-osrm.org", NOMI="https://nominatim.openstreetmap.org/search",
-  OVERPASS="https://overpass-api.de/api/interpreter",
+  OVERPASS=["https://overpass-api.de/api/interpreter","https://overpass.private.coffee/api/interpreter","https://overpass.kumi.systems/api/interpreter"],
   FR_API="https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/prix-des-carburants-en-france-flux-instantane-v2/exports/json",
   FX="https://api.frankfurter.app/latest?from=CHF&to=EUR";
 const FUELS={diesel:["gazole","fuel:diesel","Gazole"],sp95:["sp95","fuel:octane_95","SP95"],e10:["e10",null,"E10"],
@@ -273,7 +273,7 @@ async function loadFR(bb,fuels){
 async function loadCH(bb,fuels){
   if(bb[2]<CH_BBOX[0]||bb[0]>CH_BBOX[2]||bb[3]<CH_BBOX[1]||bb[1]>CH_BBOX[3])return[];
   const q=`[out:json][timeout:90];area["ISO3166-1"="CH"][admin_level=2]->.ch;(node(area.ch)["amenity"="fuel"](${bb.join(",")});way(area.ch)["amenity"="fuel"](${bb.join(",")}););out center tags;`;
-  const d=await getJSON(OVERPASS,{method:"POST",body:new URLSearchParams({data:q})});const out=[];
+  const d=await overpass(q,60000);const out=[];
   for(const el of d.elements||[]){const t=el.tags||{},lat=el.lat??el.center?.lat,lon=el.lon??el.center?.lon;if(lat==null)continue;
     let best=null;for(const f of fuels){if(f==="e10")continue;const tag=FUELS[f][1];if(tag&&t[tag]==="no")continue;
       if(CH_DEFAULT[f]!=null&&(!best||CH_DEFAULT[f]<best.p))best={p:CH_DEFAULT[f],f};}
@@ -282,6 +282,11 @@ async function loadCH(bb,fuels){
     out.push({id:`CH-${el.type}/${el.id}`,country:"CH",brand:t.brand||t.operator||"",name,address:addr||"Suisse",lat,lon,native:best.p,cur:"CHF",fuel:best.f,
       updated:"",motorway:/autobahn|raststätte/i.test(name),h24:t.opening_hours==="24/7",est:true});}
   return out;}
+async function overpass(q,ms){let err;
+  for(const url of OVERPASS){const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),ms);
+    try{const d=await getJSON(url,{method:"POST",body:new URLSearchParams({data:q}),signal:ctl.signal});if(d&&d.elements)return d;}
+    catch(e){err=e;}finally{clearTimeout(tm);}}
+  throw err||new Error("overpass");}
 async function fx(){try{return(await getJSON(FX)).rates.EUR;}catch(e){return 1.07;}}
 const title=s=>s.toLowerCase().replace(/(^|[\s'-])\p{L}/gu,m=>m.toUpperCase());
 
@@ -317,13 +322,17 @@ function pickList(R){const n=listSize(R.base.km),keep=new Map();R.ranked.slice(0
   for(const s of R.cands.slice().sort((a,b)=>a.eur-b.eur)){if(keep.size>=n)break;keep.set(s.id,s);}
   return[...keep.values()].sort((a,b)=>a.along-b.along);}
 async function addBrands(list){const fr=list.filter(s=>s.country==="FR"&&!s.brand);if(!fr.length)return;
-  const q=`[out:json][timeout:25];(${fr.map(s=>`nwr(around:200,${s.lat.toFixed(5)},${s.lon.toFixed(5)})["amenity"="fuel"];`).join("")});out center tags;`;
-  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),20000);
-  try{const d=await getJSON(OVERPASS,{method:"POST",body:new URLSearchParams({data:q}),signal:ctl.signal});
+  const q=`[out:json][timeout:25];(${fr.map(s=>`nwr(around:300,${s.lat.toFixed(5)},${s.lon.toFixed(5)})["amenity"="fuel"];`).join("")});out center tags;`;
+  try{const d=await overpass(q,15000);
     const els=(d.elements||[]).map(e=>({t:e.tags||{},lat:e.lat??e.center?.lat,lon:e.lon??e.center?.lon})).filter(e=>e.lat!=null);
-    for(const s of fr){let best=null,bd=.2;for(const e of els){const dd=hav(s.lat,s.lon,e.lat,e.lon);if(dd<bd){bd=dd;best=e;}}
-      if(best)s.brand=best.t.brand||best.t.operator||best.t.name||"";}}
-  catch(e){}finally{clearTimeout(tm);}}
+    for(const s of fr){let best=null,bd=.3;for(const e of els){const dd=hav(s.lat,s.lon,e.lat,e.lon);if(dd<bd){bd=dd;best=e;}}
+      if(best)s.brand=niceBrand(best.t.brand||best.t.operator||best.t.name||"");}}
+  catch(e){}}
+// noms OSM fréquents → marque lisible
+function niceBrand(b){const m=[[/total/i,"TotalEnergies"],[/leclerc/i,"E.Leclerc"],[/intermarch/i,"Intermarché"],[/carrefour/i,"Carrefour"],
+  [/super ?u|syst[eè]me ?u|hyper ?u|march[eé] ?u/i,"Système U"],[/auchan/i,"Auchan"],[/esso/i,"Esso"],[/\bbp\b/i,"BP"],[/shell/i,"Shell"],
+  [/\bavia\b/i,"Avia"],[/casino/i,"Casino"],[/netto/i,"Netto"],[/agip|eni\b/i,"Eni"],[/dyneff/i,"Dyneff"],[/\belan\b/i,"Elan"]];
+  for(const[r,n]of m)if(r.test(b))return n;return b;}
 const label=s=>s.brand||s.name;
 const mapUrl=s=>`https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}`;
 const mapLink=(s,txt)=>`<a class="maplink" target="_blank" rel="noopener" href="${mapUrl(s)}" title="${esc(t("mapTitle"))}">📍 ${esc(txt)}</a>`;
